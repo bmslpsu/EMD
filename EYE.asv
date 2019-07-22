@@ -1,5 +1,6 @@
 classdef EYE
-    % EYE: represents the spatiotemporal attributes of an animals visual system
+    % EYE: represents the spatiotemporal attributes of an animals visual
+    % system
     
     properties
         filt            % spatial blurring filter
@@ -10,9 +11,6 @@ classdef EYE
        	n_receptor     	% # of ommatidia (default = 2)
         n_pts           % sample points
         shift           % filter shift index
-        pattern      	% spatial information
-    	frames      	% temporal information
-        Fs              % sampling rate [Hz]
     end
     
     methods
@@ -67,17 +65,12 @@ classdef EYE
             [obj.n_pts, obj.n_receptor] = size(eye_filt);
         end
         
-        function [obj,eye_sample,HR_Motion] = EMD(obj,Pattern,Function,Fs)
+        function obj = EMD(obj,Pattern,Function)
             % EMD: elementary-motion-detector simulation
-            %	Pattern     : spaital information pixels
-            %	Function    : temporal movement of Pattern
-            
-            obj.pattern = Pattern;
-            obj.frames = Function;
-            obj.Fs = Fs;
-            
-            [eye_sample, HR_Motion] = emd_sim(obj.filt, obj.lp_tc, obj.hp_tc, Pattern, Function, Fs);
+            %   Use the angle between adjacent ommatidia & # of ommatidia
+            %   to compute properties of EYE
         
-        end
+        
+        
     end
 end

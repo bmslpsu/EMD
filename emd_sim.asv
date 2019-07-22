@@ -13,8 +13,8 @@ function [eye_sample, HR_Motion] = emd_sim(eye_filt, lp_tc, hp_tc, Pattern, fram
 %       frames              :   image indicies
 %       Fs                  :   sample rate [Hz]
 %   OUTPUTS:
-%       eye_sample          :   spatially filtered images
-%       HR_Motion           :   spatially & temporally filtered EMD response
+%       eye_sample          :   spatially filtered ima
+%       HR_Motion           :   
 %---------------------------------------------------------------------------------------------------------------------------------
 [n_samp_pts, n_receptors] = size(eye_filt);
 [n_frames, ~] = size(frames);
