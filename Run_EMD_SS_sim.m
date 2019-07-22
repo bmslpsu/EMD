@@ -1,40 +1,33 @@
 %% This is the script that performs the basic simulation for rev phi patterns and EMD response (arb. units)s
 %---------------------------------------------------------------------------------------------------------------------------------
 clear ; close all
-root = 'C:\Users\boc5244\Documents\GitHub\EMD\Functions';
-% root = 'Q:\Box Sync\Git\EMD\Functions';
-[~,~,~,~,~,FILES,PATH] = GetFileData(root);
-n_file = length(FILES);
-Func = [];
-for jj = 1:n_file
-    load(fullfile(PATH,FILES{jj}),'data','t_p')
-    func = round(data(:,2)*(96/10));
-    Func(:,jj) = uint8(func(1:50000));    
-end
-T = max(t_p);
-Fs = round(1/mean(diff(t_p)));
-tt = linspace(0,T,Fs*T)';
 
-freq = [0.5 1 2 3.5 6.5 12];
+freq = [0 0.1 0.5 1 2 3.5 5 6.5 8 10 12 15];
 vel  = 15*2*pi*freq;
 n_vel = length(vel);
+T = 3;
+A = 15;
+offset = 14;
+Fs = 1000;
+Func = [];
+for jj = 1:n_vel
+    [Func(:,jj),~,tt] = MakePosFunction_Sine(freq(jj),A,T,offset,Fs);
+end
 
-xx = abs(15*2*pi*freq.*cos(2*pi*freq.*tt));
+xx = abs(A*2*pi*freq.*cos(2*pi*freq.*tt));
 plot(tt,xx(:,1))
 vel_mean = mean(xx,1);
 
 figure (10) ; clf
-for jj = 1:n_file
-   subplot(2,3,jj) ; hold on
+for jj = 1:n_vel
+   subplot(3,ceil(n_vel/3),jj) ; hold on
    title([num2str(freq(jj)) ' Hz'])
    plot(tt,Func(:,jj))
 end
 
-%%
 delta_phi = 4.6;
-tc = 0.020;
-n_ommatidia= 72;
-lp_tc = 15e-3;  % time constant of the lp-filter
+n_ommatidia= 72; % # of omnatidia
+lp_tc = 15e-3; % time constant of the lp-filter
 hp_tc = 50e-3; % time constant of the hp filter, from Borst et al, 2003
 
 Eye = EYE(delta_phi, lp_tc, hp_tc, n_ommatidia);
@@ -42,30 +35,33 @@ Eye = EYE(delta_phi, lp_tc, hp_tc, n_ommatidia);
 spatPeriod = 3.75*[8,16,24];
 nPeriod = length(spatPeriod);
 
-% Make Pattern s
+% Make Patterns
 [pattern] = MakePattern_SpatFreq(spatPeriod); % make patterns with spatial frequencies
 Pat = pattern.Pats(1,:,:,:); % only first row is needed because of symmetry
 
-x_num = pattern.x_num;  % x contains rotations all around the display
 
-% Make a space-time plot of the stimuli
-cmap = [0 0 0; 0 1/6 0;0 2/6 0; 0 3/6 0;0 4/6 0; 0 5/6 0;0 6/6 0];
-colormap(cmap);
-for kk = 1:nPeriod
-    figure(1)
-    subplot(1,3,kk)
-    imagesc(squeeze(Pat(:,:,:,kk))');colormap(cmap);
-    hold on;
-    ylabel('time')
-    xlabel('space');
-end
+% % Make a space-time plot of the stimuli
+% cmap = [0 0 0; 0 1/6 0;0 2/6 0; 0 3/6 0;0 4/6 0; 0 5/6 0;0 6/6 0];
+% colormap(cmap);
+% for kk = 1:nPeriod
+%     figure(1)
+%     subplot(1,3,kk)
+%     imagesc(squeeze(Pat(:,:,:,kk))');colormap(cmap);
+%     hold on;
+%     ylabel('time')
+%     xlabel('space');
+% end
 
-% Simulate rotation of the visual pattern for all patterns and speeds
+%% Simulate rotation of the visual pattern for all patterns and speeds
 %---------------------------------------------------------------------------------------------------------------------------------
+
+vel_mean = 3.75*[0 0.5 1 2 4 8 16 32 64 96 120 192 250 300];
+n_vel = length(vel_mean);
+
 clc
 EMD_data = struct;
-for jj = 1:n_file
-	Func(:,jj) = uint8(MakePosFunction_Vel(3.75*vel(jj),T,Fs,true));
+for jj = 1:n_vel
+ 	Func(:,jj) = uint8(MakePosFunction_Vel(3.75*vel_mean(jj),T,Fs,true));
     for kk = 1:nPeriod
         index = (jj-1)*nPeriod + kk;
         
