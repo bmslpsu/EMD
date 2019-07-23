@@ -17,7 +17,7 @@ nPeriod = length(spatPeriod);
 [pattern] = MakePattern_SpatFreq(spatPeriod); % make patterns with spatial frequencies
 Pat = pattern.Pats(1,:,:,:); % only first row is needed because of symmetry
 
-% vel = 3.75*[0 0.5 1 2 4 8 16 32 64 96 120 192 250 300];
+vel = 3.75*[0 0.5 1 2 4 8 16 32 64 96 120 192 250 300];
 
 Fs = 1000;
 T = 3.2;
@@ -26,18 +26,18 @@ n_points = T*Fs;
 freq = [0 0.1 0.5 1 2 3.5 5 6.5 8 10 12 15];
 A = 15;
 xx = abs(A*2*pi*freq.*cos(2*pi*freq.*tt));
-vel = mean(xx,1);
+% vel = mean(xx,1);
 n_vel = length(vel);
 
 Func = nan(n_points,n_vel);
-for jj = 1:n_vel
-    [Func(:,jj),~,tt] = MakePosFunction_Sine(freq(jj),A,T,14,Fs);
-end
+% for jj = 1:n_vel
+%     [Func(:,jj),~,tt] = MakePosFunction_Sine(freq(jj),A,T,14,Fs);
+% end
 
 clc
 EMD_data = struct;
 for jj = 1:n_vel
-% 	Func(:,jj) = uint8(MakePosFunction_Vel(3.75*vel(jj),T,Fs,true));
+	Func(:,jj) = uint8(MakePosFunction_Vel(3.75*vel(jj),T,Fs,true));
     for kk = 1:nPeriod
         idx = (jj-1)*nPeriod + kk;
         
@@ -50,22 +50,6 @@ for jj = 1:n_vel
     end
 end
 disp('DONE...')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 %% Log plot of mean ss response

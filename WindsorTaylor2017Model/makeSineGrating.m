@@ -1,5 +1,4 @@
 function imageData=makeSineGrating(wavelength)
-
 % MAKESINEGRATING - function to make a sinusoidal grating image as input
 % for a Simulink model of the motion vision system of the hawkmoth Hyles
 % lineata
@@ -21,54 +20,43 @@ function imageData=makeSineGrating(wavelength)
 %
 % Called by: setup_reichardt_array_hyles_grating_osc.m
 
-% Related to paper: Shane P. Windsor and Graham K. Taylor (2017). Head
-% movements quadruple the range of speeds encoded by the insect motion
-% vision system in hawkmoths. Proceedings of the Royal Society B
-
-% Author:
-% Dr Shane Windsor
-% Department of Aerospace Engineering
-% University of Bristol
-% United Kingdom
-
-% Updated: 18/11/2016
-
-% set parameters
-acceptAngle=2; % deg
-imageHeight =137; % pixels
-imageWidth =8204; % pixels
+% Set parameters
+acceptAngle     = 2;    % deg
+imageHeight     = 137;  % pixels
+imageWidth      = 8204; % pixels
 
 % process parameters
 
-% round to give whole numbers of cycles around sphere
-numberCycles=360./wavelength;
+% Round to give whole numbers of cycles around sphere
+numberCycles = 360./wavelength;
 
-% change units
-acceptAngle=acceptAngle*pi/180;
+% Change units
+acceptAngle = acceptAngle*pi/180;
 
-% define sinewave range
-t=linspace(0,1,imageWidth);
+% Define sinewave range
+t = linspace(0,1,imageWidth);
 
-% create a spatial filter based on a gaussian approximation of an Airy disc
+% Create a spatial filter based on a gaussian approximation of an Airy disc
 % with a half width equal to the acceptance angle
-filtCoord=linspace(-0.5*acceptAngle,0.5*acceptAngle,imageHeight);%rad
-[xCoord,yCoord]=meshgrid(filtCoord,filtCoord);
-sigma=acceptAngle/(2*(2*log(2)).^0.5);
-spatialFilter=exp(-(xCoord.^2+yCoord.^2)/(2*sigma^2));
+filtCoord       = linspace(-0.5*acceptAngle,0.5*acceptAngle,imageHeight);%rad
+[xCoord,yCoord] = meshgrid(filtCoord,filtCoord);
+sigma           = acceptAngle/(2*(2*log(2)).^0.5);
+spatialFilter   = exp(-(xCoord.^2+yCoord.^2)/(2*sigma^2));
 
-% normalise the spatial filter
-spatialFilter=spatialFilter/imageHeight^2;
+% Normalise the spatial filter
+spatialFilter = spatialFilter/imageHeight^2;
 
-% create the sinusoidal grating image
-sineWave=1+1*sin(2*pi*numberCycles*t);
-rollImage=repmat(sineWave,imageHeight,1);
+% Create the sinusoidal grating image
+sineWave    = 1+1*sin(2*pi*numberCycles*t);
+rollImage   = repmat(sineWave,imageHeight,1);
 
-% filter image
-rollImageFilt=imfilter(double(rollImage),spatialFilter,'circular');
+% Filter image
+rollImageFilt = imfilter(double(rollImage),spatialFilter,'circular');
 
-% take middle row of filtered image
-rollImageFiltSample=rollImageFilt(ceil(imageHeight/2),:);
+% Take middle row of filtered image
+rollImageFiltSample = rollImageFilt(ceil(imageHeight/2),:);
 
-% create output
-imageData=rollImageFiltSample;
+% Create output
+imageData = rollImageFiltSample;
 
+end

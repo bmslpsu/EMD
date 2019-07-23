@@ -1,5 +1,4 @@
 function output=run_simulink_model_grating_osc(freq,stimAmp,headGain,headPhase)
-
 % RUN_SIMULINK_MODEL_GRATING_OSC - function runs a Simulink model of the
 % motion vision system of the hawkmoth Hyles lineata
 %
@@ -25,42 +24,28 @@ function output=run_simulink_model_grating_osc(freq,stimAmp,headGain,headPhase)
 %
 % Calls: reichardt_array_hyles_grating_osc.mdl
 
-% Related to paper: Shane P. Windsor and Graham K. Taylor (2017). Head
-% movements quadruple the range of speeds encoded by the insect motion
-% vision system in hawkmoths. Proceedings of the Royal Society B
+% Define parameters for filters inside reichardt detectors
+timeConstant    = 46e-3;
+temporalFilt    = timeConstant;
 
-% Author:
-% Dr Shane Windsor
-% Department of Aerospace Engineering
-% University of Bristol
-% United Kingdom
-
-% Updated: 18/11/2016
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% define parameters for filters inside reichardt detectors
-timeConstant=46e-3;
-temporalFilt=timeConstant;
-
-% for oscillation frequencies >=1 Hz run stimuluation for one second and
+% For oscillation frequencies >=1 Hz run stimuluation for one second and
 % then for one additional full cycle - in later processing first second of
 % data is not analysed to avoid startup effects
 if freq>=1
-    numCycles=ceil(freq);
-    recordTime=numCycles*1/freq;
-    stopTime=(numCycles+1)*1/freq;
-    stepSize=1/(freq*100); % 100 points per stimulus cycle
+    numCycles   = ceil(freq);
+    recordTime  = numCycles*1/freq;
+    stopTime    = (numCycles+1)*1/freq;
+    stepSize    = 1/(freq*100); % 100 points per stimulus cycle
     
-% for oscillation frequencies <1 Hz run simulations for 2 full cycles - in
+% For oscillation frequencies <1 Hz run simulations for 2 full cycles - in
 % later processing the first cycle is not analysed to avoid startup effects
 else
-    stopTime=2/freq;
-    stepSize=1/(freq*100); % 100 points per stimulus cycle
-    recordTime=1/freq;
+    stopTime    = 2/freq;
+    stepSize    = 1/(freq*100); % 100 points per stimulus cycle
+    recordTime  = 1/freq;
 end
 
-% setup model
+% Setup model
 mdl = 'reichardt_array_hyles_grating_osc';
 load_system(mdl);
 hws = get_param(mdl, 'modelworkspace');
@@ -70,9 +55,11 @@ hws.assignin('headAmp',headGain*stimAmp);
 hws.assignin('headPhase',headPhase*pi/180);
 hws.assignin('timeConstant',timeConstant);
 hws.assignin('temporalFilt',temporalFilt);
-hws.assignin('outputTimeList',[recordTime:stepSize:stopTime]);
+hws.assignin('outputTimeList',recordTime:stepSize:stopTime);
 hws.assignin('setStopTime',stopTime);
 set_param(mdl,'StopTime','setStopTime','OutputOption','SpecifiedOutputTimes','OutputTimes','outputTimeList');
 
 % Run model
 output=sim(mdl);
+
+end

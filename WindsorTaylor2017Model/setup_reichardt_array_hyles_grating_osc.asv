@@ -206,6 +206,7 @@ plot(ampList,r)
 ax.XScale = 'log';
 
 %%
+
 FREQ  	= nan(102,length(freqData.output));
 mag     = nan(1,length(freqData.output));
 phase   = nan(1,length(freqData.output));
@@ -223,29 +224,10 @@ end
 %%
 figure (11) ; clf ; hold on
 ax = gca;
-plot(freqList,mag)
+plot(freqList,r)
 ax.XScale = 'log';
 
-%%
-WAVE  	= nan(102,length(freqData.output));
-mag     = nan(1,length(freqData.output));
-phase   = nan(1,length(freqData.output));
-r       = nan(1,length(freqData.output));
-for kk = 1:length(waveData.output)
-	wave = freqData.output(kk);
-    WAVE(:,kk) = squeeze(wave{3}.Values.Data)';
-    
-    [fitresult, gof] = SS_fit(WAVE(:,kk));
 
-    mag(kk)   = fitresult.a1;
-    phase(kk) = fitresult.c1;
-    r(kk)     = gof.rsquare;
-end
-%%
-figure (11) ; clf ; hold on
-ax = gca;
-plot(spatialFreqList,r)
-ax.XScale = 'log';
 
 
 
