@@ -185,68 +185,109 @@ end
 % DATA = squeeze(FREQ{3}.Values.Data)';
 % plot(DATA)
 
-AMP     = nan(102,length(ampData.output));
-mag     = nan(1,length(ampData.output));
-phase   = nan(1,length(ampData.output));
-r       = nan(1,length(ampData.output));
+AMP         = nan(102,length(ampData.output));
+mag_amp     = nan(1,length(ampData.output));
+phase_amp   = nan(1,length(ampData.output));
+r_amp       = nan(1,length(ampData.output));
 for kk = 1:length(ampData.output)
 	amp = ampData.output(kk);
     AMP(:,kk) = squeeze(amp{3}.Values.Data)';
     
-    [fitresult, gof] = SS_fit(AMP(:,kk));
-
-    mag(kk)   = fitresult.a1;
-    phase(kk) = fitresult.c1;
-    r(kk)     = gof.rsquare;
+    [fitresult, gof] = SS_fit(AMP(3:end,kk),false);
+    
+    mag_amp(kk)   = fitresult.a1;
+    phase_amp(kk) = fitresult.c1;
+    r_amp(kk)     = gof.rsquare;
+%     pause()
+    if gof.rsquare<0.8
+        disp(kk)
+%         pause()
+    end
 end
-%%
-figure (11) ; clf ; hold on
-ax = gca;
-plot(ampList,r)
-ax.XScale = 'log';
+disp('DONE')
 
 %%
-FREQ  	= nan(102,length(freqData.output));
-mag     = nan(1,length(freqData.output));
-phase   = nan(1,length(freqData.output));
-r       = nan(1,length(freqData.output));
+FREQ        = nan(102,length(freqData.output));
+mag_freq   	= nan(1,length(freqData.output));
+phase_freq 	= nan(1,length(freqData.output));
+r_freq     	= nan(1,length(freqData.output));
 for kk = 1:length(freqData.output)
 	freq = freqData.output(kk);
     FREQ(:,kk) = squeeze(freq{3}.Values.Data)';
     
-    [fitresult, gof] = SS_fit(FREQ(:,kk));
+    [fitresult, gof] = SS_fit(FREQ(3:end,kk),false);
 
-    mag(kk)   = fitresult.a1;
-    phase(kk) = fitresult.c1;
-    r(kk)     = gof.rsquare;
+    mag_freq(kk)   = fitresult.a1;
+    phase_freq(kk) = fitresult.c1;
+    r_freq(kk)     = gof.rsquare;
+    
+    if gof.rsquare<0.8
+        disp(kk)
+%         pause()
+    end
 end
-%%
-figure (11) ; clf ; hold on
-ax = gca;
-plot(freqList,mag)
-ax.XScale = 'log';
+disp('DONE')
 
 %%
-WAVE  	= nan(102,length(freqData.output));
-mag     = nan(1,length(freqData.output));
-phase   = nan(1,length(freqData.output));
-r       = nan(1,length(freqData.output));
+WAVE        = nan(102,length(freqData.output));
+mag_wave  	= nan(1,length(freqData.output));
+phase_wave	= nan(1,length(freqData.output));
+r_wave     	= nan(1,length(freqData.output));
 for kk = 1:length(waveData.output)
 	wave = freqData.output(kk);
     WAVE(:,kk) = squeeze(wave{3}.Values.Data)';
     
-    [fitresult, gof] = SS_fit(WAVE(:,kk));
-
-    mag(kk)   = fitresult.a1;
-    phase(kk) = fitresult.c1;
-    r(kk)     = gof.rsquare;
+    [fitresult, gof] = SS_fit(WAVE(3:end,kk),false);
+    
+    mag_wave(kk)   = fitresult.a1;
+    phase_wave(kk) = fitresult.c1;
+    r_wave(kk)     = gof.rsquare;
+    
+    if gof.rsquare<0.8
+        disp(kk)
+%         pause()
+    end
 end
+disp('DONE')
+
 %%
 figure (11) ; clf ; hold on
-ax = gca;
-plot(spatialFreqList,r)
-ax.XScale = 'log';
 
+ax(1) = subplot(3,3,1); title('Mag')
+plot(freqList,abs(mag_freq),'k','LineWidth',1)
+ax(2) = subplot(3,3,4); title('Phase')
+
+phase_freq_plot = rad2deg(wrapTo2Pi(phase_freq) - pi);
+cnd = phase_freq_plot>40 & (1:length(phase_freq_plot))>(length(phase_freq_plot)/1.5);
+phase_freq_plot(cnd) = phase_freq_plot(cnd) - 180;
+
+plot(freqList,phase_freq_plot,'k','LineWidth',1)
+ax(3) = subplot(3,3,7); title('r_freq')
+plot(freqList,r_freq,'k','LineWidth',1)
+xlabel('Frequency')
+
+ax(4) = subplot(3,3,2); title('Mag')
+plot(ampList,abs(mag_amp),'k','LineWidth',1)
+ax(5) = subplot(3,3,5); title('Phase')
+plot(ampList,rad2deg(wrapToPi(phase_amp + pi)),'k','LineWidth',1)
+ax(6) = subplot(3,3,8); title('r_freq')
+plot(ampList,r_amp,'k','LineWidth',1)
+xlabel('Amplitude')
+
+ax(7) = subplot(3,3,3); title('Mag')
+plot(spatialFreqList,mag_wave,'k','LineWidth',1)
+ax(8) = subplot(3,3,6); title('Phase')
+plot(spatialFreqList,wrapTo2Pi(phase_wave),'k','LineWidth',1)
+ax(9) = subplot(3,3,9); title('r_freq')
+plot(spatialFreqList,r_wave,'k','LineWidth',1)
+xlabel('Spatial Frequency')
+
+set(ax,'XScale','log');
+set(ax(1:6),'XLim',[1e-1 1e2])
+set(ax(7:9),'XLim',[1e-2 3e-1])
+set(ax([1,4,7]),'YLim',[0 10])
+% set(ax([2,5,8]),'YLim',10*[-1 1])
+set(ax([3,6,9]),'YLim',[0 1])
 
 
 

@@ -22,8 +22,7 @@
 
 % Set which experiments to run
 testFreq        = true; % run oscillation frequency test
-testAmp         = true; % run oscillation amplitude test
-testWave        = true; % run spatial frequency (1/wavelength) test
+testAmp         = false; % run oscillation amplitude test
 
 % Default stimulus parameters
 ampDefault      = 5;  % [deg]
@@ -31,8 +30,8 @@ waveDefault     = 20; % [deg]
 freqDefault     = 2;  % [Hz]
 
 % Parameters for head motion
-magHeadList     = 0; % [gain]
-phaseHeadList   = 0; % [deg]
+magHeadList     = [0 0.2 0.5 0.9]; % [gain]
+phaseHeadList   = [0]; % [deg]
 
 % Parameters for oscillation frequency test
 freqList = logspace(-1,2,100); % [Hz]
@@ -40,21 +39,12 @@ freqList = logspace(-1,2,100); % [Hz]
 % Parameters for oscillation amplitude test
 ampList = logspace(-1,3,200); % [deg]
 
-% Parameters for spatial frequency test
-spatialFreqList = logspace(-2,0,100); % [1/deg]
-
 % Process parameters and create default stimulus grating
-
-% Round spatial frequencies to give whole numbers of cycles around sphere
-numberCyclesList = round(360*spatialFreqList); 
-spatialFreqList  = numberCyclesList/360;
-
 % Get parameter list size
 nMagHead    = length(magHeadList);
 nPhaseHead  = length(phaseHeadList);
 nFreq       = length(freqList);
 nAmp        = length(ampList);
-nWave       = length(spatialFreqList);
 
 % Create default simulus grating
 imageData = makeSineGrating(waveDefault);
@@ -69,9 +59,9 @@ temp        = repmat(imageData,1,3);
 tempFilt    = filtfilt(numHP,denHP,temp);
 imageData   = tempFilt(:,len+1:len*2);
 
-freqData = struct;
 % Test effect of oscillation frequency
 if testFreq
+    freqData = struct;
     disp('Testing frequency effects');
     for iPhaseHead = 1:nPhaseHead
         disp(['Head phase = ',num2str(phaseHeadList(iPhaseHead))]);
@@ -103,8 +93,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Test effect of oscillation amplitude
-ampData = struct;
 if testAmp
+    ampData = struct;
     disp('Testing amplitude effects');
     for iPhaseHead = 1:nPhaseHead
         disp(['Head phase = ',num2str(phaseHeadList(iPhaseHead))]);
@@ -122,9 +112,7 @@ if testAmp
                 disp(['Amplitude ',num2str(iAmp),' of ',num2str(nAmp)]);
                 
                 % Run simulink model
-                tic
                 output = run_simulink_model_grating_osc(freqDefault, ampList(iAmp), magHeadList(iMagHead), phaseHeadList(iPhaseHead));
-                toc
                 
                 % Store output of model
                 ampData(iPhaseHead,iMagHead).output(iAmp) = output.get('logsout');
@@ -135,100 +123,87 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Test effect of spatial frequency (wavelength of grating)
-waveData = struct;
-% clear existing grating pattern
-clear imageData
-if testWave
-    disp('Testing wavelength effects');
-    for iPhaseHead = 1:nPhaseHead
-        disp(['Head phase = ',num2str(phaseHeadList(iPhaseHead))]);
-        for iMagHead = 1:nMagHead
-            disp(['Head gain = ',num2str(magHeadList(iMagHead))]);
+%% Plots
+clc
+FREQ  	= cell(nPhaseHead,nMagHead);
+MAG   	= cell(nPhaseHead,nMagHead);
+PHASE 	= cell(nPhaseHead,nMagHead);
+R2     	= cell(nPhaseHead,nMagHead);
+pp = 1;
+debug = false;
+for jj = 1:nPhaseHead
+    for kk = 1:nMagHead
+        FREQ{jj,kk}     = nan(102,length(freqData(jj,kk).output));
+        MAG{jj,kk}   	= nan(1,length(freqData(jj,kk).output));
+        PHASE{jj,kk} 	= nan(1,length(freqData(jj,kk).output));
+        R2{jj,kk}     	= nan(1,length(freqData(jj,kk).output));
+        for ii = 1:length(freqData(jj,kk).output)
+            disp(pp)
+            freq = freqData(jj,kk).output(ii);
+            FREQ{jj,kk}(:,ii) = squeeze(freq{3}.Values.Data)';
+
+            [fitresult, gof] = SS_fit_v3(FREQ{jj,kk}(3:end,ii),false);
             
-            % Store input variables
-            waveData(iPhaseHead,iMagHead).phaseHead = phaseHeadList(iPhaseHead);
-            waveData(iPhaseHead,iMagHead).magHead   = magHeadList(iMagHead);
-            waveData(iPhaseHead,iMagHead).freqList  = freqDefault;
-            waveData(iPhaseHead,iMagHead).ampList   = ampDefault;
-            waveData(iPhaseHead,iMagHead).waveList  = 1./spatialFreqList;
+            MAG{jj,kk}(ii)   	= fitresult.a1;
+            PHASE{jj,kk}(ii)    = fitresult.c1;
+            R2{jj,kk}(ii)       = gof.rsquare;
             
-            for iWave = 1:nWave
-                disp(['Wavelength ',num2str(iWave),' of ',num2str(nWave)]);
-                
-                % Create simulus grating of given spatial frequency
-                imageData=makeSineGrating(1./spatialFreqList(iWave));
-                
-                % High pass filter spatial data with repeats of grating at both ends to avoid end effects when filtering
-                len         = length(imageData);
-                temp        = repmat(imageData,1,3);
-                tempFilt    = filtfilt(numHP,denHP,temp);
-                imageData   = tempFilt(:,len+1:len*2);
-                
-                % Run simulink model
-                tic
-                output = run_simulink_model_grating_osc(freqDefault, ampDefault, magHeadList(iMagHead), phaseHeadList(iPhaseHead));
-                toc
-                
-                % Store output of model
-                waveData(iPhaseHead,iMagHead).output(iWave) = output.get('logsout');
+            if gof.rsquare<0.9
+                disp('Here')
+%                 debug = true;
+%                 pause()
             end
+            
+        pp = pp + 1;
         end
     end
 end
+disp('------------- DONE -------------')
 
-%% Plots
-% AMP  = ampData.output(2);
-% FREQ = freqData.output(1);
-% WAVE = waveData.output(1);
-% xx = freqData.freqList;
-% DATA = squeeze(FREQ{3}.Values.Data)';
-% plot(DATA)
-
-AMP     = nan(102,length(ampData.output));
-mag     = nan(1,length(ampData.output));
-phase   = nan(1,length(ampData.output));
-r       = nan(1,length(ampData.output));
-for kk = 1:length(ampData.output)
-	amp = ampData.output(kk);
-    AMP(:,kk) = squeeze(amp{3}.Values.Data)';
-    
-    [fitresult, gof] = SS_fit(AMP(:,kk));
-
-    mag(kk)   = fitresult.a1;
-    phase(kk) = fitresult.c1;
-    r(kk)     = gof.rsquare;
+%%
+FIG = figure (11) ; clf ; hold on
+FIG.Color = 'w';
+FIG.Units = 'inches';
+FIG.Position = [200 200 12 3.5];
+movegui(FIG,'center')
+pp = 1;
+ax = axes;
+for jj = 1:nPhaseHead
+    for kk = 1:nMagHead
+        ax(jj,kk) = subplot(nPhaseHead,nMagHead,pp); hold on
+        ylabel({['Phase = ' num2str(phaseHeadList(jj))],'Mag'})
+        xlabel({'Frequency',['Gain = ' num2str(magHeadList(kk))]})
+        plot(freqList,abs(MAG{jj,kk}),'k','LineWidth',1)
+        [mm,midx] = max(abs(MAG{jj,kk}));
+        plot([freqList(midx) , freqList(midx)] , [0 , mm] , '--g','LineWidth',1)
+        plot([0 , freqList(midx)] , [mm , mm] , '--b','LineWidth',1)
+        ylim([0 10])
+        xlim([1e-1 1e2])
+        grid on
+        pp = pp + 1;
+    end
 end
-%%
-figure (11) ; clf ; hold on
-ax = gca;
-plot(ampList,r)
-ax.XScale = 'log';
+% set(ax,'XScale','log');
+set(ax,'XLim',[0 10])
 
-%%
-
-FREQ  	= nan(102,length(freqData.output));
-mag     = nan(1,length(freqData.output));
-phase   = nan(1,length(freqData.output));
-r       = nan(1,length(freqData.output));
-for kk = 1:length(freqData.output)
-	freq = freqData.output(kk);
-    FREQ(:,kk) = squeeze(freq{3}.Values.Data)';
-    
-    [fitresult, gof] = SS_fit(FREQ(:,kk));
-
-    mag(kk)   = fitresult.a1;
-    phase(kk) = fitresult.c1;
-    r(kk)     = gof.rsquare;
+FIG = figure (12) ; clf ; hold on
+FIG.Color = 'w';
+FIG.Units = 'inches';
+FIG.Position = [200 200 12 3.5];
+movegui(FIG,'center')
+pp = 1;
+ax = axes;
+for jj = 1:nPhaseHead
+    for kk = 1:nMagHead
+        ax(jj,kk) = subplot(nPhaseHead,nMagHead,pp); hold on
+        ylabel({['Phase = ' num2str(phaseHeadList(jj))],'R^{2}'})
+        xlabel({'Frequency',['Gain = ' num2str(magHeadList(kk))]})
+        plot(freqList,R2{jj,kk},'k','LineWidth',1)
+        ylim([0 1])
+        xlim([1e-1 1e2])
+        grid on
+        pp = pp + 1;
+    end
 end
-%%
-figure (11) ; clf ; hold on
-ax = gca;
-plot(freqList,r)
-ax.XScale = 'log';
-
-
-
-
-
+set(ax,'XScale','log');
 
