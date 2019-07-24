@@ -104,6 +104,7 @@ for jj = 1:nPhaseHead
         if gof.rsquare<0.9
             disp('Here')
             fitresult
+            [~] = SS_fit_v3(FREQ{jj,1}(3:end,ii),true);
             debug = true;
             pause()
         end
