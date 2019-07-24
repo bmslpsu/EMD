@@ -1,7 +1,7 @@
 function [fitresult, gof] = SS_fit_v3(y,debug)
 %% SS_fit: 
-
-x = 1:length(y);
+y = y(:);
+x = (1:length(y))';
 
 %  Create a fit.
 [xData, yData] = prepareCurveData( x, y );
@@ -29,6 +29,7 @@ opts.Display = 'Off';
 opts.Lower = [-Inf 0 -Inf];
 % opts.Robust = 'LAR';
 opts.StartPoint = [a0 0.0622 c0 d0];
+% opts.StartPoint = [a0 0.0622 c0 d0];
 % opts.StartPoint = [0.449969648951304 0.0622097555166296 -2.71607749520542];
 
 % Fit model to data

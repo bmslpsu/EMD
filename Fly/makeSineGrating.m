@@ -21,7 +21,7 @@ function imageData = makeSineGrating(wavelength)
 % Called by: setup_reichardt_array_hyles_grating_osc.m
 
 % Set parameters
-acceptAngle     = 2;    % deg
+acceptAngle     = 4.6;    % deg
 imageHeight     = 137;  % pixels
 imageWidth      = 8204; % pixels
 

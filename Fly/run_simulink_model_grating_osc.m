@@ -1,4 +1,4 @@
-function output=run_simulink_model_grating_osc(freq,stimAmp,headGain,headPhase)
+function output = run_simulink_model_grating_osc(freq,stimAmp,headGain,headPhase,image)
 % RUN_SIMULINK_MODEL_GRATING_OSC - function runs a Simulink model of the
 % motion vision system of the hawkmoth Hyles lineata
 %
@@ -25,7 +25,9 @@ function output=run_simulink_model_grating_osc(freq,stimAmp,headGain,headPhase)
 % Calls: reichardt_array_hyles_grating_osc.mdl
 
 % Define parameters for filters inside reichardt detectors
-timeConstant    = 46e-3;
+% timeConstant    = 46e-3;
+timeConstant    = 35e-3;
+
 temporalFilt    = timeConstant;
 
 % For oscillation frequencies >=1 Hz run stimuluation for one second and
@@ -50,6 +52,7 @@ mdl = 'reichardt_array_hyles_grating_osc';
 load_system(mdl);
 hws = get_param(mdl, 'modelworkspace');
 hws.assignin('freq',freq*2*pi);
+hws.assignin('imageData',image);
 hws.assignin('stimAmp',stimAmp);
 hws.assignin('headAmp',headGain*stimAmp);
 hws.assignin('headPhase',headPhase*pi/180);
