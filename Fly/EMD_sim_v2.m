@@ -1,4 +1,4 @@
-function [MAG,PHASE,R2] = EMD_sim_v2(freqList,amp,wave,Gain,Phase,showplot)
+function [MAG,PHASE,R2,freqData] = EMD_sim_v2(freqList,amp,wave,Gain,Phase,showplot)
 % SETUP_REICHARDT_ARRAY_HYLES_GRATING_OSC - script to setup and run a
 % Simulink model of the motion vision system of the hawkmoth Hyles lineata
 %
@@ -22,15 +22,15 @@ function [MAG,PHASE,R2] = EMD_sim_v2(freqList,amp,wave,Gain,Phase,showplot)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % % Default stimulus parameters
-% amp      = 5;  % [deg]
-% wave     = 20; % [deg]
+% amp      = 15; % [deg]
+% wave     = 30; % [deg]
 % 
 % % Parameters for head motion
 % Gain  	= [0]; % [gain]
 % Phase 	= [0]; % [deg]
-% % 
-% % % Parameters for oscillation frequency test
-% % freqList = logspace(-1,2,100); % [Hz]
+% 
+% % Parameters for oscillation frequency test
+% freqList = logspace(-1,1.9,90); % [Hz]
 
 % Process parameters and create default stimulus grating
 % Get parameter list size
@@ -76,7 +76,7 @@ for jj = 1:nPhaseHead
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%%
 % Plots
 clc
 FREQ  	= cell(nPhaseHead,1);
@@ -103,6 +103,7 @@ for jj = 1:nPhaseHead
 
         if gof.rsquare<0.9
             disp('Here')
+            fitresult
             debug = true;
             pause()
         end
@@ -111,7 +112,7 @@ for jj = 1:nPhaseHead
     end
 end
 disp('------------- DONE -------------')
-
+%%
 if showplot
     FIG = figure (11) ; clf ; hold on
     FIG.Color = 'w';
@@ -139,7 +140,7 @@ if showplot
     FIG = figure (12) ; clf ; hold on
     FIG.Color = 'w';
     FIG.Units = 'inches';
-    FIG.Position = [200 200 12 3.5];
+    FIG.Position = [200 200 6 3.5];
     movegui(FIG,'center')
     pp = 1;
     ax = axes;
