@@ -54,10 +54,24 @@ ylim([0 12])
 xlim([1e-1 1e2])
 grid on
 set(ax,'XScale','log');
-% plot(Freq,abs(Head_MAG),'b-','LineWidth',2,'Marker','.','MarkerSize',25)
-% [mm,midx] = max(abs(Head_MAG));
-% plot([Freq(midx) , Freq(midx)] , [0 , mm] , '--b','LineWidth',1)
-% % plot([0.1 , Freq(midx)] , [mm , mm] , '--b','LineWidth',1)
+
+%%
+FIG = figure (11) ; clf ; hold on
+FIG.Color = 'w';
+FIG.Units = 'inches';
+FIG.Position = [200 200 4 2.5];
+movegui(FIG,'center')
+
+ax = subplot(1,1,1); hold on
+ylabel('Phase')
+xlabel('Frequency (Hz)')
+plot(freqList,Phase,'k','LineWidth',2,'Marker','none','MarkerSize',15)
+% ylim([0 12])
+% ax.YTick = [0 2.5 5];
+% ax.YTickLabels = {'0','0.5','1'};
+xlim([1e-1 1e2])
+grid on
+set(ax,'XScale','log');
 
 %%
 FIG = figure (2) ; clf ; hold on

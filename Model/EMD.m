@@ -1,9 +1,8 @@
 classdef EMD
     % EMD: elementary-motion-detctor simulation
-    %  	Simulates the
-    %   effect of head motion on the output of q motion vision system. 
-    %   The model consists of a rotating circular 2D array of evenly spaced 
-    %   Reichardt detectors sampling a rotating grating.
+    %  	Simulates the effect of head motion on the output of q motion vision system. 
+    %   The model consists of a rotating circular 2D array of evenly spaced Reichardt 
+    %   detectors sampling a rotating grating.
     
     properties
         % Properties of the visual systen
@@ -13,8 +12,9 @@ classdef EMD
             % temporalFilt      :  time constannt for 1st order low-pass temporal filter [s]
         
       	% Properties of the visual scene
-       	Scene = struct('spatialPeriod', [] , 'spatialFrequency', [] , 'n_cycle'       , [] , 'spatialFilter', [], ...
-                       'image_raw',     [] , 'image_filt',       [], 'image_filt_samp', [] , 'imageSize',     []);
+       	Scene = struct('spatialPeriod',   [] , 'spatialFrequency', [] , 'n_cycle',    [] , ...
+                       'spatialFilter',   [],  'image_raw',        [] , 'image_filt', [], ...
+                       'image_filt_samp', [] , 'imageSize',        []);
             % spatialPeriod   	:	spatial period (wavelength) of grating [deg]
             % spatialFrequency	:	spatial frequency of frating [cycle/deg]
             % n_cycle           :	# of cycles/repetitions of spatial period
@@ -74,7 +74,8 @@ classdef EMD
             %  with a half width equal to the acceptance angle
             
             % Construct filter
-            filtCoord       = linspace(-0.5*obj.Eye.acceptAngle,0.5*obj.Eye.acceptAngle,obj.Scene.imageSize(1)); % rad
+            filtCoord       = linspace(-0.5*obj.Eye.acceptAngle,0.5*obj.Eye.acceptAngle,... % rad
+                                                obj.Scene.imageSize(1));
             [xCoord,yCoord] = meshgrid(filtCoord,filtCoord);
             sigma           = obj.Eye.acceptAngle/(2*(2*log(2)).^0.5);
             spatialFilter   = exp(-(xCoord.^2+yCoord.^2)/(2*sigma^2));
@@ -132,7 +133,8 @@ classdef EMD
 %             HPcut           = 0.0075; % cut off frequency for 1 pole analogue high pass filter
 %             [numHP,denHP]   = bilinear([1 0],[1 HPcut],1); % create digital version of filter
 % 
-%             % High pass filter spatial data with repeats of grating at both ends to avoid end effects when filtering
+%             % High pass filter spatial data with repeats of grating at both ends to avoid end 
+              % effects when filtering
 %             len         = length(imageData);
 %             temp        = repmat(imageData,1,3);
 %             tempFilt    = filtfilt(numHP,denHP,temp);
@@ -190,7 +192,8 @@ classdef EMD
             hws.assignin('outputTimeList',  obj.Motion.recordTime:obj.Motion.stepSize:obj.Motion.stopTime);
             hws.assignin('setStopTime',     obj.Motion.stopTime);
             
-            set_param(mdl,'StopTime','setStopTime','OutputOption','SpecifiedOutputTimes','OutputTimes','outputTimeList');
+            set_param(mdl,'StopTime','setStopTime','OutputOption',...
+                          'SpecifiedOutputTimes','OutputTimes','outputTimeList');
 
             % Run model
             emd_output = sim(mdl);
@@ -199,7 +202,7 @@ classdef EMD
         
         function [obj,x,y,fitresult,gof] = FitSine(obj,debug)
             % FitSine: fit a single sinusoid to the summed EMD output
-            %  used to measure the peak output of the EMD under set conditions
+            %  Used to measure the peak output of the EMD under set conditions
             
             if nargin<2
                 debug = false; % default
@@ -213,17 +216,12 @@ classdef EMD
             % Create a fit
             [xData, yData] = prepareCurveData( x, y );
 
-            ft = fittype(@(a1,b1,c1,x) a1*sin(b1*x+c1),... % for a single sinusoid
+            ft = fittype(@(a1,b1,c1,x) a1*sin(2*ob1*x+c1),... % for a single sinusoid
             'coefficients', {'a1', 'b1', 'c1'});
         
             % Find best initial values
             a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
-            
-            %L1 = sign(y(1:end-1))~=sign(y(2:end));
-            %L2 = find(sign(y(1:end-1))~=sign(y(2:end)))+1;
-            %x0 = x(L1)-y(L1).*(x(L2)-x(L1))./(y(L2)-y(L1));
-            %b0 = 1/(mean(diff(x0))*2);
-            
+                        
             [Fv, Mag , Phs] = FFT(x,y);
             [~,midx] = max(Mag);
             b0 = Fv(midx);  % approximate frequency
@@ -233,7 +231,7 @@ classdef EMD
             opts.Display = 'Off';
             opts.Lower = [-Inf 0 -Inf];
             opts.StartPoint = [a0 b0 c0];
-%             opts.StartPoint = [0.874989858434368 0.0634665182543393 -1.65472499380445 ];
+            % opts.StartPoint = [0.874989858434368 0.0634665182543393 -1.65472499380445 ];
             opts.StartPoint = [2.57917725700562 b0 -1.49592957634619];
             
             % Fit model to data
@@ -244,7 +242,7 @@ classdef EMD
             obj.Fit.fitresult   = fitresult;
             obj.Fit.gof         = gof;
             obj.Output.mag     	= fitresult.a1;
-            obj.Output.phase  	= fitresult.b1;
+            obj.Output.phase  	= fitresult.c1;
             obj.Output.r2       = gof.rsquare;
             
             if debug
