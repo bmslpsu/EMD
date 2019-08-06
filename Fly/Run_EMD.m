@@ -27,9 +27,7 @@ MCS = 4*amp*Freq;
 
 [MAG,PHS,R2,FREQ] = EMD_sim_v2(freqList,amp,wave,0,0,true);
 
-clear showplot
 
-%%
 Head_MAG = nan(length(Freq),1);
 Head_PHASE = nan(length(Freq),1);
 Head_R2 = nan(length(Freq),1);
@@ -43,7 +41,7 @@ for kk = 1:length(Freq)
     FREQ{kk} = freqData;
 end
 
-clearvars -except Head_MAG Head_PHASE Head_R2 FREQ Gain Phase MCF MCS_List amp wave freqList
+% clearvars -except Head_MAG Head_PHASE Head_R2 FREQ Gain Phase MCF MCS_List amp wave freqList
 %%
 FIG = figure (1) ; clf ; hold on
 FIG.Color = 'w';
@@ -51,7 +49,7 @@ FIG.Units = 'inches';
 FIG.Position = [200 200 4 2.5];
 movegui(FIG,'center')
 
-ax = subplot(1,1,1); hold on
+ax = subplot(1,1,1); hold on 
 ylabel('Mag')
 xlabel('Frequency (Hz)')
 plot(freqList,abs(MAG{1,1}),'k','LineWidth',2,'Marker','none','MarkerSize',15)

@@ -216,23 +216,21 @@ classdef EMD
             % Create a fit
             [xData, yData] = prepareCurveData( x, y );
 
-            ft = fittype(@(a1,b1,c1,x) a1*sin(2*ob1*x+c1),... % for a single sinusoid
+            ft = fittype(@(a1,b1,c1,x) a1*cos(2*pi*b1*x + c1),... % for a single sinusoid
             'coefficients', {'a1', 'b1', 'c1'});
-        
+            
             % Find best initial values
-            a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
-                        
+            a0 = max(abs(max(y) - min(y))); % approximate amplitude
+            
             [Fv, Mag , Phs] = FFT(x,y);
             [~,midx] = max(Mag);
             b0 = Fv(midx);  % approximate frequency
             c0 = Phs(midx); % approximate phase
-
+            
             opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
             opts.Display = 'Off';
             opts.Lower = [-Inf 0 -Inf];
             opts.StartPoint = [a0 b0 c0];
-            % opts.StartPoint = [0.874989858434368 0.0634665182543393 -1.65472499380445 ];
-            opts.StartPoint = [2.57917725700562 b0 -1.49592957634619];
             
             % Fit model to data
             [fitresult, gof] = fit( xData, yData, ft, opts );
