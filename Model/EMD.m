@@ -5,7 +5,7 @@ classdef EMD
     %   detectors sampling a rotating grating.
     
     properties
-        % Properties of the visual systen
+        % Properties of the visual system
         Eye = struct('acceptAngle', [] ,'timeConstant', [] , 'temporalFilt', [])
             % acceptAngle       :  acceptance angle for spatial filter [rad]
             % timeConstant      :  time constant for 1st order low-pass temporal filter [s]
