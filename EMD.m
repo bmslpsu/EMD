@@ -110,7 +110,7 @@ classdef EMD
             % Define sinewave range
             t = linspace(0,1,imageWidth);
             
-            % Create the grating image
+            % Create the sinusoidal grating image
             if strcmp(method,'sine')
                 func = 1 + 1*sin(2*pi*obj.Scene.n_cycle*t);
             elseif strcmp(method,'square')
