@@ -5,15 +5,15 @@ function [] = Run_EMD_raw()
 %   OUTPUTS:
 %       - 
 %% Run EMD Simulations
-acceptAngle     = 1.1*4.6; % acceptance angle[deg]
-timeConstant    = 35e-3; % temporal time constant[s]
-wavelength      = 30; % spatial period [deg]
-imageHeight     = 137;
-imageWidth      = 8204;
-method          = 'sine'; % spatial form
-amplitude       = 15; % input sine wave amplitude
-debug           = false; % show sine fit
-freqList        = logspace(-1,1.9,20); % frequencies to sweep [Hz]
+acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
+timeConstant    = 35e-3;    % temporal time constant[s]
+wavelength      = 30;       % spatial period [deg]
+imageHeight     = 137;      % height of input visual field
+imageWidth      = 8204;     % width of input visual field
+method          = 'sine';   % spatial form
+amplitude       = 15;       % input sine wave amplitude
+debug           = false;    % show sine fit
+freqList        = logspace(-1,1.9,100); % frequencies to sweep [Hz]
 
 head_gain       = 0.0;
 head_phase      = 0.0;
