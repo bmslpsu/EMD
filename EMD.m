@@ -257,5 +257,56 @@ classdef EMD
             
         end
         
+        function [obj,x,y,fitresult,gof] = FitFixedSine(obj,debug)
+            % FitSine: fit a single sinusoid to the summed EMD output
+            %  Used to measure the peak output of the EMD under set conditions
+            
+            if nargin<2
+                debug = false; % default
+            end
+            
+            % Set data to fit
+            x = obj.Output.all.tout(3:end); % time data
+            y = squeeze(obj.Output.all.summedReichardtOutput.Data); % summed EMD output
+            y = y(3:end);
+            
+            % Create a fit
+            [xData, yData] = prepareCurveData( x, y );
+
+            ft = fittype(@(a1,c1,x) a1*sin(2*pi* obj.Motion.frequency*x + c1),... % for a single sinusoid
+                    'coefficients', {'a1','c1'});
+        
+            % ft = fittype( 'sin1' );
+
+            % Find best initial values
+            a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
+            
+            [Fv, Mag , Phs] = FFT(x,y);
+            [~,midx] = max(Mag);
+            b0 = Fv(midx);  % approximate frequency
+            c0 = Phs(midx); % approximate phase
+            
+            opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
+            opts.Display = 'Off';
+            opts.Lower = [-Inf 0 -Inf];
+            %opts.StartPoint = [a0 b0 c0];
+            
+            % Fit model to data
+            [fitresult, gof] = fit( xData, yData, ft, opts );
+            
+            obj.Fit.x           = x;
+            obj.Fit.y           = y;
+            obj.Fit.fitresult   = fitresult;
+            obj.Fit.gof         = gof;
+            obj.Output.mag     	= fitresult.a1;
+            obj.Output.phase  	= fitresult.c1;
+            obj.Output.r2       = gof.rsquare;
+            
+            if debug
+                plot(fitresult, x ,y)
+            end
+            
+        end
+        
     end
 end

@@ -12,8 +12,8 @@ imageHeight     = 137;      % height of input visual field
 imageWidth      = 8204;     % width of input visual field
 method          = 'sine';   % spatial form
 amplitude       = 15;       % input sine wave amplitude
-debug           = false;    % show sine fit
-freqRaw        = logspace(-1,1.9,500); % frequencies to sweep [Hz]
+debug           = true;    % show sine fit
+freqRaw         = logspace(-1,1.9,100); % frequencies to sweep [Hz]
 
 head_gain       = 0.0;
 head_phase      = 0.0;
@@ -23,17 +23,19 @@ body_phase      = 0.0;
 self = EMD(acceptAngle , timeConstant);
 self = MakeImage(self,wavelength,imageHeight,imageWidth,method);
 
-nFreq       = length(freqRaw);
+nFreq           = length(freqRaw);
 Mag_Raw         = nan(nFreq,1);
 Phase_Raw       = nan(nFreq,1);
 R2_Raw          = nan(nFreq,1);
+Freq_Raw       	= nan(nFreq,1);
 for kk = 1:nFreq
     self = Run(self, freqRaw(kk), amplitude, head_gain, head_phase, body_gain, body_phase);
-    self = FitSine(self,debug);
+    self = FitFixedSine(self,debug);
         
     Mag_Raw(kk)     = self.Output.mag;
     Phase_Raw(kk)   = self.Output.phase;
     R2_Raw(kk)      = self.Output.r2;
+%     Freq_Raw(kk)    = self.Fit.fitresult.b1;
     
     fprintf('Test %i : r2 = %f \n', kk, R2_Raw(kk))    
 end
