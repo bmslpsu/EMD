@@ -1,4 +1,4 @@
-function [] = Run_EMD_raw()
+function [] = Run_EMD_head()
 %% Run_EMD_raw: 
 %   INPUTS:
 %       -
@@ -13,7 +13,7 @@ imageWidth      = 8204;     % width of input visual field
 method          = 'sine';   % spatial form
 amplitude       = 15;       % input sine wave amplitude
 debug           = true;    % show sine fit
-freqRaw         = logspace(-1,1.9,100); % frequencies to sweep [Hz]
+freqRaw         = logspace(-1,1.9,50); % frequencies to sweep [Hz]
 
 head_gain       = 0.0;
 head_phase      = 0.0;
@@ -67,7 +67,7 @@ Phase_Head   	= nan(nFreq,1);
 R2_Head         = nan(nFreq,1);
 for kk = 1:nFreq
     self = Run(self, freqHead(kk), amplitude, head_gain(kk), head_phase(kk), body_gain, body_phase);
-    self = FitSine(self,debug);
+    self = FitFixedSine(self,debug);
         
     Mag_Head(kk)     = self.Output.mag;
     Phase_Head(kk)   = self.Output.phase;
@@ -108,10 +108,15 @@ FIG.Position = [200 200 4 2.5];
 movegui(FIG,'center')
 
 ax = subplot(1,1,1); hold on
-ylabel('Phase')
+ylabel(['Phase (' char(176) ')'])
 xlabel('Frequency (Hz)')
-plot(freqRaw,rad2deg(Phase_Raw),'k','LineWidth',2,'Marker','none','MarkerSize',15)
-plot(freqHead,rad2deg(Phase_Head),'b-','LineWidth',2,'Marker','.','MarkerSize',25)
+test = Phase_Raw;
+% test(test>=pi) = test(test>=pi) - 2*pi;
+plot(freqRaw,rad2deg(test),'k','LineWidth',2,'Marker','none','MarkerSize',15)
+
+test = Phase_Head;
+% test(test>=pi) = test(test>=pi) - 2*pi;
+plot(freqHead,rad2deg(test),'b-','LineWidth',2,'Marker','.','MarkerSize',25)
 xlim([1e-1 1e2])
 grid on
 set(ax,'XScale','log');

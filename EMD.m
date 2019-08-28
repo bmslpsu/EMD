@@ -222,23 +222,23 @@ classdef EMD
             % Create a fit
             [xData, yData] = prepareCurveData( x, y );
 
-%             ft = fittype(@(a1,b1,c1,x) a1*sin(2*pi*b1*x + c1),... % for a single sinusoid
-%             'coefficients', {'a1', 'b1', 'c1'});
+            %ft = fittype(@(a1,b1,c1,x) a1*sin(2*pi*b1*x + c1),... % for a single sinusoid
+            %            'coefficients', {'a1', 'b1', 'c1'});
         
             ft = fittype( 'sin1' );
 
             % Find best initial values
-            a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
+            %a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
             
-            [Fv, Mag , Phs] = FFT(x,y);
-            [~,midx] = max(Mag);
-            b0 = Fv(midx);  % approximate frequency
-            c0 = Phs(midx); % approximate phase
+            %[Fv, Mag , Phs] = FFT(x,y);
+            %[~,midx] = max(Mag);
+            %b0 = Fv(midx);  % approximate frequency
+            %c0 = Phs(midx); % approximate phase
             
             opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
             opts.Display = 'Off';
             opts.Lower = [-Inf 0 -Inf];
-%             opts.StartPoint = [a0 b0 c0];
+            % opts.StartPoint = [a0 b0 c0];
             
             % Fit model to data
             [fitresult, gof] = fit( xData, yData, ft, opts );
@@ -258,7 +258,7 @@ classdef EMD
         end
         
         function [obj,x,y,fitresult,gof] = FitFixedSine(obj,debug)
-            % FitSine: fit a single sinusoid to the summed EMD output
+            % FitFixedSine: fit a fixed-frequency single sinusoid to the summed EMD output
             %  Used to measure the peak output of the EMD under set conditions
             
             if nargin<2
@@ -273,10 +273,10 @@ classdef EMD
             % Create a fit
             [xData, yData] = prepareCurveData( x, y );
 
-            ft = fittype(@(a1,c1,x) a1*sin(2*pi* obj.Motion.frequency*x + c1),... % for a single sinusoid
-                    'coefficients', {'a1','c1'});
+            ft = fittype(@(a1,c1,x) a1*sin(2*pi*obj.Motion.frequency*x + c1),... % for a single sinusoid
+                       'coefficients', {'a1','c1'});
         
-            % ft = fittype( 'sin1' );
+%             ft = fittype( 'sin1' );
 
             % Find best initial values
             a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
@@ -288,8 +288,9 @@ classdef EMD
             
             opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
             opts.Display = 'Off';
-            opts.Lower = [-Inf 0 -Inf];
-            %opts.StartPoint = [a0 b0 c0];
+            opts.Lower = [0 -2*pi];
+            opts.Upper = [20 0];
+            opts.StartPoint = [a0 c0];
             
             % Fit model to data
             [fitresult, gof] = fit( xData, yData, ft, opts );
