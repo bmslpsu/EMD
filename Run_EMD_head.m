@@ -1,5 +1,5 @@
-function [] = Run_EMD_head()
-%% Run_EMD_head: 
+function [] = Run_EMD_raw()
+%% Run_EMD_raw: 
 %   INPUTS:
 %       -
 %   OUTPUTS:
