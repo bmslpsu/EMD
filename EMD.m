@@ -204,6 +204,9 @@ classdef EMD
             % Run model
             emd_output = sim(mdl);
             obj.Output.all = emd_output;
+            obj.Output.summedEMD = squeeze(emd_output.summedReichardtOutput.Data);
+            obj.Output.time = emd_output.tout;
+
         end
         
         function [obj,x,y,fitresult,gof] = FitSine(obj,debug)
@@ -288,8 +291,8 @@ classdef EMD
             
             opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
             opts.Display = 'Off';
-            opts.Lower = [0 -2*pi];
-            opts.Upper = [20 0];
+            opts.Lower = [0 -pi];
+            opts.Upper = [20 pi];
             opts.StartPoint = [a0 c0];
             
             % Fit model to data
