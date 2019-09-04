@@ -279,20 +279,18 @@ classdef EMD
             ft = fittype(@(a1,c1,x) a1*sin(2*pi*obj.Motion.frequency*x + c1),... % for a single sinusoid
                        'coefficients', {'a1','c1'});
         
-%             ft = fittype( 'sin1' );
-
             % Find best initial values
             a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
             
             [Fv, Mag , Phs] = FFT(x,y);
             [~,midx] = max(Mag);
-            b0 = Fv(midx);  % approximate frequency
+            %b0 = Fv(midx);  % approximate frequency
             c0 = Phs(midx); % approximate phase
             
             opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
             opts.Display = 'Off';
-            opts.Lower = [0 -pi];
-            opts.Upper = [20 pi];
+            opts.Lower = [0 0];
+            opts.Upper = [40 2*pi];
             opts.StartPoint = [a0 c0];
             
             % Fit model to data

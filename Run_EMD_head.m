@@ -92,13 +92,13 @@ clear ax
 
 ax(1) = subplot(1,3,1); hold on
 eIdx_1 = 10;
-title({[' Freq = ' num2str(freqRaw(eIdx_1)) , 'Hz'],['r^{2} = ' num2str(round(R2_Raw(eIdx_1),2))]})
+title({[' Freq = ' num2str(round(freqRaw(eIdx_1),2)) , 'Hz'],['r^{2} = ' num2str(round(R2_Raw(eIdx_1),2))]})
 time = SummedEMD{eIdx_1}(3:end,2) - SummedEMD{eIdx_1}(3,2);
 emd = SummedEMD{eIdx_1}(3:end,1);
 fit = FitResult{eIdx_1};
 input = max(emd)*SummedEMD{eIdx_1}(3:end,3)./max(SummedEMD{eIdx_1}(3:end,3));
 plot(time,input,'--b')
-plot(fit,time,emd,'.k')
+plot(fit,time,emd,'-k')
 s = findobj('type','legend');
 delete(s)
 ylabel('EMD Output')
@@ -113,7 +113,7 @@ emd = SummedEMD{rminI}(3:end,1);
 fit = FitResult{rminI};
 input = max(emd)*SummedEMD{rminI}(3:end,3)./max(SummedEMD{rminI}(3:end,3));
 plot(time,input,'--b')
-plot(fit,time,emd,'.k')
+plot(fit,time,emd,'-k')
 s = findobj('type','legend');
 delete(s)
 ylabel('')
@@ -128,7 +128,7 @@ emd = SummedEMD{eIdx_2}(3:end,1);
 fit = FitResult{eIdx_2};
 input = max(emd)*SummedEMD{eIdx_2}(3:end,3)./max(SummedEMD{eIdx_2}(3:end,3));
 plot(time,input,'--b')
-plot(fit,time,emd,'.k')
+plot(fit,time,emd,'-k')
 s = findobj('type','legend');
 delete(s)
 ylabel('')
