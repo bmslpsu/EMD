@@ -162,7 +162,7 @@ classdef EMD
             obj.Body.phase          = body_phase;
             
             % Define parameters for filters inside reichardt detectors
-            obj.Eye.temporalFilt = obj.Eye.timeConstant;
+            obj.Eye.temporalFilt    = obj.Eye.timeConstant;
          	obj.Motion.stepSize   	= 1/(frequency*100); % 100 points per stimulus cycle
             
             % For oscillation frequencies >=1 Hz run stimuluation for one second and
@@ -282,7 +282,7 @@ classdef EMD
             % Find best initial values
             a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
             
-            [Fv, Mag , Phs] = FFT(x,y);
+            [~, Mag , Phs] = FFT(x,y);
             [~,midx] = max(Mag);
             %b0 = Fv(midx);  % approximate frequency
             c0 = Phs(midx); % approximate phase
