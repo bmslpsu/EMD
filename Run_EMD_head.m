@@ -13,7 +13,7 @@ imageWidth      = 8204;     % width of input visual field
 method          = 'sine';   % spatial form
 amplitude       = 15;       % input sine wave amplitude
 debug           = true;     % show sine fit
-freqRaw         = logspace(-1,1.9,50); % frequencies to sweep [Hz]
+freqRaw         = logspace(-1,1.9,100); % frequencies to sweep [Hz]
 
 head_gain       = 0.0;
 head_phase      = 0.0;
@@ -82,7 +82,7 @@ for kk = 1:nFreq
 end
 
 %% Fit Examples
-FIG = figure (12) ; clf ; hold on
+FIG = figure (1) ; clf ; hold on
 FIG.Color = 'w';
 FIG.Units = 'inches';
 FIG.Position = 1*[2 2 8 2.5];
@@ -140,7 +140,7 @@ leg.Box = 'off';
 set(ax,'FontSize',8)
 
 %% Magnitude vs Frequency
-FIG = figure (1) ; clf ; hold on
+FIG = figure (2) ; clf ; hold on
 FIG.Color = 'w';
 FIG.Units = 'inches';
 FIG.Position = [200 200 4 2.5];
@@ -168,7 +168,7 @@ grid on
 set(ax,'XScale','log');
 
 %% Phase vs Frequency
-FIG = figure (11) ; clf ; hold on
+FIG = figure (3) ; clf ; hold on
 FIG.Color = 'w';
 FIG.Units = 'inches';
 FIG.Position = [200 200 4 2.5];
@@ -188,7 +188,7 @@ grid on
 set(ax,'XScale','log');
 
 %% R^2 vs Frequency
-FIG = figure (12) ; clf ; hold on
+FIG = figure (4) ; clf ; hold on
 FIG.Color = 'w';
 FIG.Units = 'inches';
 FIG.Position = [200 200 4 2.5];
@@ -210,7 +210,7 @@ set(ax,'XScale','log');
 
 
 %% Magnitude vs Mean Angular Speed
-FIG = figure (6) ; clf ; hold on
+FIG = figure (5) ; clf ; hold on
 FIG.Color = 'w';
 FIG.Units = 'inches';
 FIG.Position = [200 200 4 2.5];
@@ -240,7 +240,7 @@ xlim([0 800])
 grid on
 
 %% Magnitude vs Mean Contrast Frequency
-FIG = figure (7) ; clf ; hold on
+FIG = figure (6) ; clf ; hold on
 FIG.Color = 'w';
 FIG.Units = 'inches';
 FIG.Position = [200 200 4 2.5];

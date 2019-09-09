@@ -289,8 +289,8 @@ classdef EMD
             
             opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
             opts.Display = 'Off';
-            opts.Lower = [0 0];
-            opts.Upper = [40 2*pi];
+            opts.Lower = [0 -2*pi];
+            opts.Upper = [40 0];
             opts.StartPoint = [a0 c0];
             
             % Fit model to data
