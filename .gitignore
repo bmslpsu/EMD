@@ -1,2 +1,7 @@
 *.asv
 *.autosave
+Model/slprj/accel/reichardt_array_EMD/tmwinternal/simulink_cache.xml
+Model/slprj/accel/reichardt_array_EMD/reichardt_array_EMD_top_vm.bc
+Model/slprj/accel/reichardt_array_EMD/amsi_serial.mat
+Model/slprj/_sfprj/reichardt_array_EMD/amsi_serial.mat
+Model/reichardt_array_EMD.slxc
