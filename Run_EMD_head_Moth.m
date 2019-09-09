@@ -13,7 +13,7 @@ imageWidth      = 8204;     % width of input visual field
 method          = 'sine';   % spatial form
 amplitude       = 5;        % input sine wave amplitude
 debug           = true;     % show sine fit
-freqRaw         = logspace(-1,2,50); % frequencies to sweep [Hz]
+freqRaw         = logspace(-1,2,100); % frequencies to sweep [Hz]
 
 head_gain       = 0.0;
 head_phase      = 0.0;

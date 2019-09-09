@@ -1,5 +1,5 @@
 function [] = Run_EMD_head()
-%% Run_EMD_raw: 
+%% Run_EMD_head: 
 %   INPUTS:
 %       -
 %   OUTPUTS:
@@ -20,7 +20,7 @@ head_phase      = 0.0;
 body_gain       = 0.0;
 body_phase      = 0.0;
 
-self = EMD(acceptAngle , timeConstant);
+self = EMD(acceptAngle, timeConstant);
 self = MakeImage(self,wavelength,imageHeight,imageWidth,method);
 
 nFreq           = length(freqRaw);
@@ -42,7 +42,7 @@ for kk = 1:nFreq
     Phase_Raw(kk)   = self.Output.phase;
     R2_Raw(kk)      = self.Output.r2;
     
-    fprintf('Test %i : r2 = %f \n', kk, R2_Raw(kk))    
+    fprintf('Test %i \n', kk)    
 end
 
 %% Run EMD simulations with head
@@ -78,7 +78,7 @@ for kk = 1:nFreq
     Phase_Head(kk)   = self.Output.phase;
     R2_Head(kk)      = self.Output.r2;
     
-    fprintf('Test %i : r2 = %f \n', kk, R2_Head(kk))    
+    fprintf('Test %i \n', kk)    
 end
 
 %% Fit Examples

@@ -69,7 +69,7 @@ classdef EMD
             obj.Eye.timeConstant	= timeConstant;
         end
         
-        function [spatialFilter,obj] = MakeSpatialFilter(obj)
+        function spatialFilter = MakeSpatialFilter(obj)
             % MakeSpatialFilter: make spatial filter to apply to incoming images
             %  Create a spatial filter based on a gaussian approximation of an Airy disc
             %  with a half width equal to the acceptance angle
@@ -148,6 +148,38 @@ classdef EMD
             
         end
         
+     	function [] = PlotImage(obj)
+            % PlotImage: plot the visual scene
+            %  Raw & filtered image comparison
+            FIG = figure;
+            FIG.Color = 'w';
+            FIG.Units = 'inches';
+            
+            ax(1) = subplot(3,1,1); hold on
+            title('Raw')
+                imagesc(obj.Scene.image_raw)
+                
+        	ax(2) = subplot(3,1,2); hold on
+            title('Low-pass Filtered')
+                imagesc(obj.Scene.image_filt)
+            
+        	ax(3) = subplot(3,1,3); hold on
+            title('Low + High Pass Filtered')
+            xlabel(['(' char(176) ')'])
+                imagesc(obj.Scene.image_filt_samp)
+                
+            set(ax,'XLim', 0.5 + [0 obj.Scene.imageSize(2)], 'YLim', 0.5 + [0 obj.Scene.imageSize(1)],...
+                   'XTick',[1  obj.Scene.imageSize(2)], 'YTick',[1 obj.Scene.imageSize(1)])
+               
+            set(ax(3),'XTickLabels',{'0','360'}, 'YLim', 0.5 + [0 1], 'YTick',[1])
+            
+           	linkaxes(ax(1:3),'x')
+            linkaxes(ax(1:2),'xy')
+            
+            hold off
+            
+        end
+        
         function [obj,emd_output] = Run(obj, frequency, amplitude, head_gain, head_phase, body_gain, body_phase)
             % Run: setup simulink model & run
             %  Updates block paramters & executes model
@@ -209,57 +241,36 @@ classdef EMD
 
         end
         
-        function [obj,x,y,fitresult,gof] = FitSine(obj,debug)
-            % FitSine: fit a single sinusoid to the summed EMD output
-            %  Used to measure the peak output of the EMD under set conditions
+     	function [] = PlotMotion(obj)
+            % PlotMotion: plot the visual motion
+            %  Reference, Head, Body, and EMD Input motion
+            FIG = figure;
+            FIG.Color = 'w';
+            FIG.Units = 'inches';
             
-            if nargin<2
-                debug = false; % default
-            end
-            
-            % Set data to fit
-            x = obj.Output.all.tout(3:end); % time data
-            y = squeeze(obj.Output.all.summedReichardtOutput.Data); % summed EMD output
-            y = y(3:end);
-            
-            % Create a fit
-            [xData, yData] = prepareCurveData( x, y );
+            A = obj.Motion.amplitude;
+            f = obj.Motion.frequency;
+           	tt = (0:(1/(100*f)):2*(1/f))';
 
-            %ft = fittype(@(a1,b1,c1,x) a1*sin(2*pi*b1*x + c1),... % for a single sinusoid
-            %            'coefficients', {'a1', 'b1', 'c1'});
-        
-            ft = fittype( 'sin1' );
-
-            % Find best initial values
-            %a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
+            ref = A*sin(2*pi*f.*tt + 0);
+            head = (A*obj.Head.gain)*sin(2*pi*f.*tt + deg2rad(obj.Head.phase));
+            body = (A*obj.Body.gain)*sin(2*pi*f.*tt + deg2rad(obj.Body.phase));
+            input = ref - head - body;
             
-            %[Fv, Mag , Phs] = FFT(x,y);
-            %[~,midx] = max(Mag);
-            %b0 = Fv(midx);  % approximate frequency
-            %c0 = Phs(midx); % approximate phase
+            hold on
+            xlabel('Time (s)')
+            ylabel(['Angle (' char(176) ')'])
+            h(1) = plot(tt,ref,'--k');
+            h(2) = plot(tt,head,'-b');
+            h(3) = plot(tt,body,'-r');
+            h(4) = plot(tt,input,'-g');
             
-            opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
-            opts.Display = 'Off';
-            opts.Lower = [-Inf 0 -Inf];
-            % opts.StartPoint = [a0 b0 c0];
-            
-            % Fit model to data
-            [fitresult, gof] = fit( xData, yData, ft, opts );
-            
-            obj.Fit.x           = x;
-            obj.Fit.y           = y;
-            obj.Fit.fitresult   = fitresult;
-            obj.Fit.gof         = gof;
-            obj.Output.mag     	= fitresult.a1;
-            obj.Output.phase  	= fitresult.c1;
-            obj.Output.r2       = gof.rsquare;
-            
-            if debug
-                plot(fitresult, x ,y)
-            end
+            set(h,'LineWidth',1)
+            legend(h,'Reference','Head','Body','EMD Input');
+            hold off
             
         end
-        
+                
         function [obj,x,y,fitresult,gof] = FitFixedSine(obj,debug)
             % FitFixedSine: fit a fixed-frequency single sinusoid to the summed EMD output
             %  Used to measure the peak output of the EMD under set conditions
@@ -284,13 +295,12 @@ classdef EMD
             
             [~, Mag , Phs] = FFT(x,y);
             [~,midx] = max(Mag);
-            %b0 = Fv(midx);  % approximate frequency
             c0 = Phs(midx); % approximate phase
             
             opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
             opts.Display = 'Off';
             opts.Lower = [0 -2*pi];
-            opts.Upper = [40 0];
+            opts.Upper = [inf 0];
             opts.StartPoint = [a0 c0];
             
             % Fit model to data
@@ -304,8 +314,25 @@ classdef EMD
             obj.Output.phase  	= fitresult.c1;
             obj.Output.r2       = gof.rsquare;
             
-            if debug
-                plot(fitresult, x ,y)
+            if debug 
+                hold on
+             	FIG = gcf; cla
+                FIG.Color = 'w';
+                title(['Mag = ' num2str(round(obj.Output.mag,5)) , ...
+                       '  ,   Phs = '   num2str(round(rad2deg(obj.Output.phase),5)) , ...
+                       '  ,   r^{2} = ' num2str(round(obj.Output.r2,5))])
+                xlim([x(1) x(end)])
+                ylim(1.1*max(abs(y))*[-1 1])
+                seenAngleN = max(abs(y))*obj.Output.all.seenAngle.Data(2:end)./max(abs(obj.Output.all.seenAngle.Data(2:end)));
+                plot(obj.Output.time(2:end),seenAngleN ,'--b')
+                plot(fitresult, x ,y ,'.k')
+                
+                s = findobj('type','legend');
+                delete(s)
+                leg = legend('Normalized Input','EMD Output','EMD Fit');
+                leg.Box = 'on';
+
+                hold off
             end
             
         end
