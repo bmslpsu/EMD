@@ -6,15 +6,15 @@ classdef EMD
     
     properties
         % Properties of the visual systen
-        Eye = struct('acceptAngle', [] ,'timeConstant', [] , 'temporalFilt', [])
+        Eye = struct('acceptAngle', [] , 'temporalFilt', [], 'timeConstant', [])
             % acceptAngle       :  acceptance angle for spatial filter [rad]
-            % timeConstant      :  time constant for 1st order low-pass temporal filter [s]
-            % temporalFilt      :  time constant for 1st order low-pass temporal filter [s]
-        
+            % temporalFilt      :  time constant for 1st order low-pass temporal filters [s]
+        	% timeConstant    	:  time constant for delay filters [s]
+
       	% Properties of the visual scene
-       	Scene = struct('spatialPeriod',   [] , 'spatialFrequency', [] , 'n_cycle',    [] , ...
-                       'spatialFilter',   [],  'image_raw',        [] , 'image_filt', [], ...
-                       'image_filt_samp', [] , 'imageSize',        []);
+       	Scene = struct('spatialPeriod',   [] , 'spatialFrequency',  [] , 'n_cycle',    [] , ...
+                       'spatialFilter',   [] , 'image_raw',         [] , 'image_filt', [], ...
+                       'image_filt_samp', [] , 'imageSize',         []);
             % spatialPeriod   	:	spatial period (wavelength) of grating [deg]
             % spatialFrequency	:	spatial frequency of frating [cycle/deg]
             % n_cycle           :	# of cycles/repetitions of spatial period
@@ -30,6 +30,8 @@ classdef EMD
             % frequency         :	frequency of visual scene motion
             % period            :	period of visual scene motion
             % amplitude         :	amplitude of visual scene motion
+            % mean_speed     	:	mean speed of stimulus [deg/s]
+            % temp_freq         :	temporal frequency [spatial cycles/s]
          	% n_cycles          :   # of cycles
             % recordTime        :   time to record [s]
             % stopTime          :   time to stop [s]
@@ -61,12 +63,13 @@ classdef EMD
     end
     
     methods
-        function obj = EMD(acceptAngle,timeConstant)
+        function obj = EMD(acceptAngle, temporalFilt, timeConstant)
             % EMD: Construct an instance of this class
             %  Assign inputs to properties and run initial computations
             
             obj.Eye.acceptAngle 	= deg2rad(acceptAngle);
             obj.Eye.timeConstant	= timeConstant;
+            obj.Eye.temporalFilt	= temporalFilt;
         end
         
         function spatialFilter = MakeSpatialFilter(obj)
@@ -188,13 +191,15 @@ classdef EMD
             obj.Motion.frequency    = frequency;
             obj.Motion.amplitude    = amplitude;
             obj.Motion.period       = 1/frequency;
+            obj.Motion.mean_speed   = 4*obj.Motion.amplitude*obj.Motion.frequency;
+            obj.Motion.temp_freq    = obj.Motion.mean_speed/obj.Scene.spatialPeriod;
           	obj.Head.gain           = head_gain;
             obj.Head.phase          = head_phase;
           	obj.Body.gain           = body_gain;
             obj.Body.phase          = body_phase;
             
             % Define parameters for filters inside reichardt detectors
-            obj.Eye.temporalFilt    = obj.Eye.timeConstant;
+%             obj.Eye.temporalFilt    = obj.Eye.timeConstant;
          	obj.Motion.stepSize   	= 1/(frequency*100); % 100 points per stimulus cycle
             
             % For oscillation frequencies >=1 Hz run stimuluation for one second and
@@ -318,19 +323,20 @@ classdef EMD
                 hold on
              	FIG = gcf; cla
                 FIG.Color = 'w';
-                title(['Mag = ' num2str(round(obj.Output.mag,5)) , ...
-                       '  ,   Phs = '   num2str(round(rad2deg(obj.Output.phase),5)) , ...
-                       '  ,   r^{2} = ' num2str(round(obj.Output.r2,5))])
+     
+                title(['Freq = ' num2str(round(obj.Motion.frequency,5)) , ......
+                       '   ,   Mag = ' num2str(round(obj.Output.mag,5)) , ...
+                       '   ,   Phs = '   num2str(round(rad2deg(obj.Output.phase),5)) , ...
+                       '   ,   r^{2} = ' num2str(round(obj.Output.r2,5))])
                 xlim([x(1) x(end)])
                 ylim(1.1*max(abs(y))*[-1 1])
                 seenAngleN = max(abs(y))*obj.Output.all.seenAngle.Data(2:end)./max(abs(obj.Output.all.seenAngle.Data(2:end)));
                 plot(obj.Output.time(2:end),seenAngleN ,'--b')
                 plot(fitresult, x ,y ,'.k')
                 
-                s = findobj('type','legend');
-                delete(s)
-                leg = legend('Normalized Input','EMD Output','EMD Fit');
-                leg.Box = 'on';
+                leg = findobj('type','legend');
+                delete(leg)
+                % legend('Normalized Input','EMD Output','EMD Fit');
 
                 hold off
             end

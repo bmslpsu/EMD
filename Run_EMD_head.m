@@ -6,21 +6,22 @@ function [] = Run_EMD_head()
 %       - 
 %% Run EMD simulations with no head
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
-timeConstant    = 35e-3;    % temporal time constant[s]
+delay           = 35e-3;    % EMD delay
+temporalFilt    = 20e-3;    % temporal time constant[s]
 wavelength      = 30;       % spatial period [deg]
 imageHeight     = 137;      % height of input visual field
 imageWidth      = 8204;     % width of input visual field
 method          = 'sine';   % spatial form
 amplitude       = 15;       % input sine wave amplitude
 debug           = true;     % show sine fit
-freqRaw         = logspace(-1,1.9,100); % frequencies to sweep [Hz]
+freqRaw         = logspace(-1,1.9,50); % frequencies to sweep [Hz]
 
 head_gain       = 0.0;
 head_phase      = 0.0;
 body_gain       = 0.0;
 body_phase      = 0.0;
 
-self = EMD(acceptAngle, timeConstant);
+self = EMD(acceptAngle, temporalFilt, delay);
 self = MakeImage(self,wavelength,imageHeight,imageWidth,method);
 
 nFreq           = length(freqRaw);
@@ -47,13 +48,14 @@ end
 
 %% Run EMD simulations with head
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
-timeConstant    = 35e-3;    % temporal time constant[s]
+delay           = 20e-3;    % EMD delay
+temporalFilt    = 35e-3;    % temporal time constant[s]
 wavelength      = 30;       % spatial period [deg]
 imageHeight     = 137;      % height of input visual field
 imageWidth      = 8204;     % width of input visual field
 method          = 'sine';   % spatial form
 amplitude       = 15;       % input sine wave amplitude
-debug           = false;    % show sine fit
+debug           = true;    % show sine fit
 freqHead        = [0.5 1 2 3.5 6.5 12]; % frequencies to sweep [Hz]
 
 head_gain       = [0.374835324904235 , 0.477215987558476 , 0.469258904934960 , ...
@@ -63,7 +65,7 @@ head_phase      = [71.9088187846447 , 32.4385996720171  , 6.70463359270437 , ...
 body_gain       = 0.0;
 body_phase      = 0.0;
 
-self = EMD(acceptAngle , timeConstant);
+self = EMD(acceptAngle , temporalFilt, delay);
 self = MakeImage(self,wavelength,imageHeight,imageWidth,method);
 
 nFreq        	= length(freqHead);
