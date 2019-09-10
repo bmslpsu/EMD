@@ -199,8 +199,7 @@ classdef EMD
             obj.Body.phase          = body_phase;
             
             % Define parameters for filters inside reichardt detectors
-%             obj.Eye.temporalFilt    = obj.Eye.timeConstant;
-         	obj.Motion.stepSize   	= 1/(frequency*100); % 100 points per stimulus cycle
+         	obj.Motion.stepSize = 1/(frequency*100); % 100 points per stimulus cycle
             
             % For oscillation frequencies >=1 Hz run stimuluation for one second and
             % then for one additional full cycle - in later processing first second of
@@ -214,12 +213,12 @@ classdef EMD
             % later processing the first cycle is not analysed to avoid startup effects
             else
                 obj.Motion.n_cycle      = 2;
-                obj.Motion.stopTime     = 2/frequency;
                 obj.Motion.recordTime   = 1/frequency;
+                obj.Motion.stopTime     = 2/frequency;
             end
 
             % Setup model
-            mdl = 'reichardt_array_EMD';
+            mdl = 'reichardt_array_EMD_fly';
             load_system(mdl);
             hws = get_param(mdl, 'modelworkspace');
             
@@ -285,14 +284,14 @@ classdef EMD
             end
             
             % Set data to fit
-            x = obj.Output.all.tout(3:end); % time data
+            x = obj.Output.all.tout(2:end); % time data
             y = squeeze(obj.Output.all.summedReichardtOutput.Data); % summed EMD output
-            y = y(3:end);
+            y = y(2:end);
             
             % Create a fit
             [xData, yData] = prepareCurveData( x, y );
 
-            ft = fittype(@(a1,c1,x) a1*sin(2*pi*obj.Motion.frequency*x + c1),... % for a single sinusoid
+            ft = fittype(@(a1,c1,x) a1*sin(2*pi*obj.Motion.frequency*x + c1),... % for a single fixed-frequency sinusoid
                        'coefficients', {'a1','c1'});
         
             % Find best initial values
@@ -325,9 +324,9 @@ classdef EMD
                 FIG.Color = 'w';
      
                 title(['Freq = ' num2str(round(obj.Motion.frequency,5)) , ......
-                       '   ,   Mag = ' num2str(round(obj.Output.mag,5)) , ...
-                       '   ,   Phs = '   num2str(round(rad2deg(obj.Output.phase),5)) , ...
-                       '   ,   r^{2} = ' num2str(round(obj.Output.r2,5))])
+                       '      Mag = ' num2str(round(obj.Output.mag,5)) , ...
+                       '      Phs = '   num2str(round(rad2deg(obj.Output.phase),5)) , ...
+                       '      r^{2} = ' num2str(round(obj.Output.r2,5))])
                 xlim([x(1) x(end)])
                 ylim(1.1*max(abs(y))*[-1 1])
                 seenAngleN = max(abs(y))*obj.Output.all.seenAngle.Data(2:end)./max(abs(obj.Output.all.seenAngle.Data(2:end)));

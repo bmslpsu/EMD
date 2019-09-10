@@ -7,14 +7,14 @@ function [] = Run_EMD_head()
 %% Run EMD simulations with no head
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
 delay           = 35e-3;    % EMD delay
-temporalFilt    = 20e-3;    % temporal time constant[s]
+temporalFilt    = 35e-3;    % temporal time constant[s]
 wavelength      = 30;       % spatial period [deg]
 imageHeight     = 137;      % height of input visual field
 imageWidth      = 8204;     % width of input visual field
 method          = 'sine';   % spatial form
 amplitude       = 15;       % input sine wave amplitude
 debug           = true;     % show sine fit
-freqRaw         = logspace(-1,1.9,50); % frequencies to sweep [Hz]
+freqRaw         = logspace(-1,1.9,40); % frequencies to sweep [Hz]
 
 head_gain       = 0.0;
 head_phase      = 0.0;
@@ -48,7 +48,7 @@ end
 
 %% Run EMD simulations with head
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
-delay           = 20e-3;    % EMD delay
+delay           = 35e-3;    % EMD delay
 temporalFilt    = 35e-3;    % temporal time constant[s]
 wavelength      = 30;       % spatial period [deg]
 imageHeight     = 137;      % height of input visual field
@@ -162,9 +162,9 @@ plot(freqRaw(eIdx_1),Mag_Raw(eIdx_1),'r','Marker','.','MarkerSize',20)
 plot(freqRaw(rminI),Mag_Raw(rminI),'r','Marker','.','MarkerSize',20)
 plot(freqRaw(eIdx_2),Mag_Raw(eIdx_2),'r','Marker','.','MarkerSize',20)
 
-ylim([0 5])
-ax.YTick = [0 2.5 5];
-ax.YTickLabels = {'0','0.5','1'};
+% ylim([0 5])
+% ax.YTick = [0 2.5 5];
+% ax.YTickLabels = {'0','0.5','1'};
 xlim([1e-1 1e2])
 grid on
 set(ax,'XScale','log');
