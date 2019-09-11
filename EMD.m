@@ -81,7 +81,7 @@ classdef EMD
             filtCoord       = linspace(-0.5*obj.Eye.acceptAngle,0.5*obj.Eye.acceptAngle,... % rad
                                                 obj.Scene.imageSize(1));
             [xCoord,yCoord] = meshgrid(filtCoord,filtCoord);
-            sigma           = obj.Eye.acceptAngle/(2*(2*log(2)).^0.5);
+            sigma           = obj.Eye.acceptAngle/((2*log(2)).^0.5);
             spatialFilter   = exp(-(xCoord.^2+yCoord.^2)/(2*sigma^2));
             
             % Normalize filter

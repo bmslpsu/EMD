@@ -5,6 +5,7 @@ function [] = Run_EMD_head()
 %   OUTPUTS:
 %       - 
 %% Run EMD simulations with no head
+clearvars -except lp_a lp_b
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
 delay           = 35e-3;    % EMD delay
 temporalFilt    = 35e-3;    % temporal time constant[s]
@@ -14,7 +15,7 @@ imageWidth      = 8204;     % width of input visual field
 method          = 'sine';   % spatial form
 amplitude       = 15;       % input sine wave amplitude
 debug           = true;     % show sine fit
-freqRaw         = logspace(-1,1.9,40); % frequencies to sweep [Hz]
+freqRaw         = logspace(-1,2,100); % frequencies to sweep [Hz]
 
 head_gain       = 0.0;
 head_phase      = 0.0;
@@ -45,6 +46,8 @@ for kk = 1:nFreq
     
     fprintf('Test %i \n', kk)    
 end
+normM = max(Mag_Raw);
+Mag_Raw = Mag_Raw./normM;
 
 %% Run EMD simulations with head
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
@@ -82,6 +85,7 @@ for kk = 1:nFreq
     
     fprintf('Test %i \n', kk)    
 end
+Mag_Head = Mag_Head./normM;
 
 %% Fit Examples
 FIG = figure (1) ; clf ; hold on
@@ -154,7 +158,7 @@ xlabel('Frequency (Hz)')
 plot(freqRaw,abs(Mag_Raw),'k','LineWidth',2,'Marker','none','MarkerSize',15)
 [mm,midx] = max(abs(Mag_Raw));
 plot([freqRaw(midx) , freqRaw(midx)] , [0 , mm] , '--k','LineWidth',1)
-plot([0.1 , freqRaw(midx)] , [mm , mm] , '--k','LineWidth',1)
+% plot([0.1 , freqRaw(midx)] , [mm , mm] , '--k','LineWidth',1)
 plot(freqHead,abs(Mag_Head),'b-','LineWidth',2,'Marker','.','MarkerSize',25)
 [mm,midx] = max(abs(Mag_Head));
 plot([freqHead(midx) , freqHead(midx)] , [0 , mm] , '--b','LineWidth',1)
@@ -162,12 +166,9 @@ plot(freqRaw(eIdx_1),Mag_Raw(eIdx_1),'r','Marker','.','MarkerSize',20)
 plot(freqRaw(rminI),Mag_Raw(rminI),'r','Marker','.','MarkerSize',20)
 plot(freqRaw(eIdx_2),Mag_Raw(eIdx_2),'r','Marker','.','MarkerSize',20)
 
-% ylim([0 5])
-% ax.YTick = [0 2.5 5];
-% ax.YTickLabels = {'0','0.5','1'};
 xlim([1e-1 1e2])
 grid on
-set(ax,'XScale','log');
+set(ax,'FontSize',8,'XScale','log');
 
 %% Phase vs Frequency
 FIG = figure (3) ; clf ; hold on
@@ -185,9 +186,10 @@ plot(freqRaw(eIdx_1),rad2deg(Phase_Raw(eIdx_1)),'r','Marker','.','MarkerSize',20
 plot(freqRaw(rminI),rad2deg(Phase_Raw(rminI)),'r','Marker','.','MarkerSize',20)
 plot(freqRaw(eIdx_2),rad2deg(Phase_Raw(eIdx_2)),'r','Marker','.','MarkerSize',20)
 
+ylim([-250 0])
 xlim([1e-1 1e2])
 grid on
-set(ax,'XScale','log');
+set(ax,'FontSize',8,'XScale','log');
 
 %% R^2 vs Frequency
 FIG = figure (4) ; clf ; hold on
@@ -208,56 +210,32 @@ plot(freqRaw(eIdx_2),R2_Raw(eIdx_2),'r','Marker','.','MarkerSize',20)
 ylim([0 1])
 xlim([1e-1 1e2])
 grid on
-set(ax,'XScale','log');
-
-
-%% Magnitude vs Mean Angular Speed
-FIG = figure (5) ; clf ; hold on
-FIG.Color = 'w';
-FIG.Units = 'inches';
-FIG.Position = [200 200 4 2.5];
-movegui(FIG,'center')
-
-mean_speed_raw  = 4*amplitude.*freqRaw;
-mean_speed_head = 4*amplitude.*freqHead;
-
-ax = subplot(1,1,1); hold on
-ylabel('Mag')
-xlabel(['Mean Angular Speed (' char(176) '/s)'])
-plot(mean_speed_raw,abs(Mag_Raw),'k','LineWidth',2,'Marker','none','MarkerSize',15)
-[mm,midx] = max(abs(Mag_Raw));
-plot([mean_speed_raw(midx) , mean_speed_raw(midx)] , [0 , mm] , '--k','LineWidth',1)
-plot([0.1 , mean_speed_raw(midx)] , [mm , mm] , '--k','LineWidth',1)
-plot(mean_speed_head,abs(Mag_Head),'b-','LineWidth',2,'Marker','.','MarkerSize',25)
-[mm,midx] = max(abs(Mag_Head));
-plot([mean_speed_head(midx) , mean_speed_head(midx)] , [0 , mm] , '--b','LineWidth',1)
-plot(mean_speed_raw(eIdx_1),Mag_Raw(eIdx_1),'r','Marker','.','MarkerSize',20)
-plot(mean_speed_raw(rminI),Mag_Raw(rminI),'r','Marker','.','MarkerSize',20)
-plot(mean_speed_raw(eIdx_2),Mag_Raw(eIdx_2),'r','Marker','.','MarkerSize',20)
-
-ylim([0 5])
-ax.YTick = [0 2.5 5];
-ax.YTickLabels = {'0','0.5','1'};
-xlim([0 800])
-grid on
+set(ax,'FontSize',8,'XScale','log');
 
 %% Magnitude vs Mean Contrast Frequency
 FIG = figure (6) ; clf ; hold on
 FIG.Color = 'w';
 FIG.Units = 'inches';
-FIG.Position = [200 200 4 2.5];
+FIG.Position = [200 200 4 3.2];
 movegui(FIG,'center')
 
 mean_freq_raw  = 4*amplitude.*freqRaw./wavelength;
 mean_freq_head = 4*amplitude.*freqHead./wavelength;
 
-ax = subplot(1,1,1); hold on
+clear ax
+ax(1) = subplot(1,1,1); hold on
+off = 0.1;
+ax(1).Position(4) = ax(1).Position(4) - 2*off;
+ax(1).Position(2) = ax(1).Position(2) + off;
+% ax(1).Position(4) = 0.7838;
+
 ylabel('Mag')
-xlabel('Mean Contrast Frequency (Hz)')
+xlabel('Mean Temporal Frequency (Hz)')
+
 plot(mean_freq_raw,abs(Mag_Raw),'k','LineWidth',2,'Marker','none','MarkerSize',15)
 [mm,midx] = max(abs(Mag_Raw));
 plot([mean_freq_raw(midx) , mean_freq_raw(midx)] , [0 , mm] , '--k','LineWidth',1)
-plot([0.1 , mean_freq_raw(midx)] , [mm , mm] , '--k','LineWidth',1)
+% plot([0.1 , mean_freq_raw(midx)] , [mm , mm] , '--k','LineWidth',1)
 plot(mean_freq_head,abs(Mag_Head),'b-','LineWidth',2,'Marker','.','MarkerSize',25)
 [mm,midx] = max(abs(Mag_Head));
 plot([mean_freq_head(midx) , mean_freq_head(midx)] , [0 , mm] , '--b','LineWidth',1)
@@ -265,9 +243,20 @@ plot(mean_freq_raw(eIdx_1),Mag_Raw(eIdx_1),'r','Marker','.','MarkerSize',20)
 plot(mean_freq_raw(rminI),Mag_Raw(rminI),'r','Marker','.','MarkerSize',20)
 plot(mean_freq_raw(eIdx_2),Mag_Raw(eIdx_2),'r','Marker','.','MarkerSize',20)
 
-ylim([0 5])
-ax.YTick = [0 2.5 5];
-ax.YTickLabels = {'0','0.5','1'};
-xlim([0 25])
+ax(2) = axes;
+ax(2).Position = ax(1).Position;
+ax(2).Color = 'none';
+ax(2).XAxisLocation = 'top';
+ax(2).XLabel.String = ['Mean Angular Speed (' char(176) '/s)'];
+ax(2).YTick = [];
+ax(1).YGrid = 'on';
+set(ax,'FontSize',8,'XLim',[0 25])
+ax(2).XTickLabels = num2strcell(ax(1).XTick*wavelength);
+
+linkaxes(ax,'x')
+
+% ylim([0 5])
+% ax.YTick = [0 2.5 5];
+% ax.YTickLabels = {'0','0.5','1'};
 grid on
 end
