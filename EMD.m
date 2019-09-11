@@ -174,7 +174,7 @@ classdef EMD
             set(ax,'XLim', 0.5 + [0 obj.Scene.imageSize(2)], 'YLim', 0.5 + [0 obj.Scene.imageSize(1)],...
                    'XTick',[1  obj.Scene.imageSize(2)], 'YTick',[1 obj.Scene.imageSize(1)])
                
-            set(ax(3),'XTickLabels',{'0','360'}, 'YLim', 0.5 + [0 1], 'YTick',[1])
+            set(ax(3),'XTickLabels',{'0','360'}, 'YLim', 0.5 + [0 1], 'YTick', 1)
             
            	linkaxes(ax(1:3),'x')
             linkaxes(ax(1:2),'xy')
