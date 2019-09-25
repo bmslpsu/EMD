@@ -1,9 +1,11 @@
-function [] = Run_EMD_head()
+function [FRF_fit_Raw,FRF_fit_Head] = Run_EMD_head()
 %% Run_EMD_head: 
 %   INPUTS:
 %       -
 %   OUTPUTS:
-%       - 
+%       FRF_fit_Raw
+%       FRF_fit_Head
+
 %% Run EMD simulations with no head
 clearvars -except lp_a lp_b
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
@@ -259,4 +261,79 @@ linkaxes(ax,'x')
 % ax.YTick = [0 2.5 5];
 % ax.YTickLabels = {'0','0.5','1'};
 grid on
+
+%% FRF Fit
+Cmplx_Raw = Mag_Raw.*cos(Phase_Raw) + 1i*Mag_Raw.*sin(Phase_Raw);
+gain_Raw = abs(Cmplx_Raw);
+phase_Raw = rad2deg(angle(Cmplx_Raw));
+phase_Raw(phase_Raw>0) = phase_Raw(phase_Raw>0) - 360;
+
+Cmplx_Head = Mag_Head.*cos(Phase_Head) + 1i*Mag_Head.*sin(Phase_Head);
+gain_Head = abs(Cmplx_Head);
+phase_Head = angle(Cmplx_Head);
+phase_Head(phase_Head>0) = phase_Head(phase_Head>0) - 2*pi;
+
+newfreq_Head = linspace(min(freqHead),max(freqHead),50);
+gain_Head  = interp1(freqHead, gain_Head, newfreq_Head, 'pchip');
+phase_Head = interp1(freqHead, phase_Head, newfreq_Head, 'pchip');
+
+Cmplx_Head = gain_Head.*cos(phase_Head) + 1i*gain_Head.*sin(phase_Head);
+gain_Head = abs(Cmplx_Head);
+phase_Head = angle(Cmplx_Head);
+phase_Head(phase_Head>0) = phase_Head(phase_Head>0) - 2*pi;
+
+% Recreate FRF's
+FIG = figure (7) ; clf ; hold on
+FIG.Color = 'w';
+FIG.Units = 'inches';
+FIG.Position = [2 2 4 2*2.5];
+movegui(FIG,'center')
+clear ax
+ax(1) = subplot(2,1,1); hold on
+    ylabel('Mag')
+    xlabel('Frequency (Hz)')
+    plot(freqRaw,gain_Raw,'k','LineWidth',2,'Marker','none','MarkerSize',15)
+    plot(newfreq_Head,gain_Head,'b-','LineWidth',2,'Marker','.','MarkerSize',15)
+    grid on
+
+ax(2) = subplot(2,1,2); hold on
+    ylabel('Phase')
+    xlabel('Frequency (Hz)')
+    plot(freqRaw,(phase_Raw),'k','LineWidth',2,'Marker','none','MarkerSize',15)
+    plot(newfreq_Head,rad2deg(phase_Head),'b-','LineWidth',2,'Marker','.','MarkerSize',15)
+    grid on
+
+set(ax,'FontSize',8,'XScale','log','XLim',[1e-1 1e2]);
+linkaxes(ax,'x')
+
+FRF_Raw = idfrd(Cmplx_Raw,2*pi*freqRaw,0);
+FRF_Head = idfrd(Cmplx_Head,2*pi*newfreq_Head,0);
+
+% State space model estimation: RAW
+Options = n4sidOptions;
+Options.Display = 'on';
+Options.N4Weight = 'CVA';
+Options.N4Horizon = [23 23 23];                     
+FRF_fit_Raw = n4sid(FRF_Raw, 6, Options);
+[gain_Raw_fit,phase_Raw_fit,~] = bode(FRF_fit_Raw,2*pi*freqRaw);
+axes(ax(1))
+plot(freqRaw,squeeze(gain_Raw_fit),'c--','LineWidth',2)
+axes(ax(2))
+plot(freqRaw,squeeze(phase_Raw_fit) - 360,'c--','LineWidth',2)
+
+% State space model estimation: HEAD
+Options = n4sidOptions;
+Options.Display = 'on';
+Options.N4Weight = 'CVA';
+Options.N4Horizon = [15 15 15];
+FRF_fit_Head = n4sid(FRF_Head, 10, Options);
+[gain_Head_fit,phase_Head_fit,~] = bode(FRF_fit_Head,2*pi*newfreq_Head);
+axes(ax(1))
+plot(newfreq_Head,squeeze(gain_Head_fit),'g--','LineWidth',2)
+axes(ax(2))
+plot(newfreq_Head,squeeze(phase_Head_fit),'g--','LineWidth',2)
+
+save(fullfile(mfilename('fullpath'),'EMD_TF_Model.mat'), 'FRF_fit_Raw', 'FRF_fit_Head')
+% save('EMD_TF_Model.mat','FRF_fit_Raw', 'FRF_fit_Head')
+
 end
