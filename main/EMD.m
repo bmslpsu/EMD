@@ -6,10 +6,11 @@ classdef EMD
     
     properties
         % Properties of the visual systen
-        Eye = struct('acceptAngle', [] , 'temporalFilt', [], 'timeConstant', [])
-            % acceptAngle       :  acceptance angle for spatial filter [rad]
-            % temporalFilt      :  time constant for 1st order low-pass temporal filters [s]
-        	% timeConstant    	:  time constant for delay filters [s]
+        Model = 'reichardt_array_EMD_*.slx';
+        Eye = struct('animal', [], 'acceptAngle', [] , 'temporalFilt', [], 'timeConstant', [])
+            % animal            :   animal name for simulink model [reichardt_array_EMD_"animal".slx]
+            % acceptAngle       :   acceptance angle for spatial filter [rad]
+            % temporalFilt      :   time constant for  delay 1st order low-pass temporal filters [s]
 
       	% Properties of the visual scene
        	Scene = struct('spatialPeriod',   [] , 'spatialFrequency',  [] , 'n_cycle',    [] , ...
@@ -63,12 +64,13 @@ classdef EMD
     end
     
     methods
-        function obj = EMD(acceptAngle, temporalFilt, timeConstant)
+        function obj = EMD(animal, acceptAngle, temporalFilt)
             % EMD: Construct an instance of this class
             %  Assign inputs to properties and run initial computations
             
+            % Construct EYE
+            obj.Eye.animal          = animal;
             obj.Eye.acceptAngle 	= deg2rad(acceptAngle);
-            obj.Eye.timeConstant	= timeConstant;
             obj.Eye.temporalFilt	= temporalFilt;
         end
         
@@ -100,6 +102,7 @@ classdef EMD
             end
             
             % Assign properties
+          	obj.Scene.form              = method;
             obj.Scene.spatialPeriod   	= wavelength;
             obj.Scene.spatialFrequency	= 1./wavelength;
             obj.Scene.imageSize       	= [imageHeight,imageWidth];
@@ -218,9 +221,12 @@ classdef EMD
             end
 
             % Setup model
-            mdl = 'reichardt_array_EMD_fly';
-            load_system(mdl);
-            hws = get_param(mdl, 'modelworkspace');
+            SLX = strrep(obj.Model, '*', obj.Eye.animal);
+            modelpath = which(SLX);
+            [modeldir,SLX,~] = fileparts(modelpath);
+            cd(modeldir)
+            load_system(SLX);
+            hws = get_param(SLX, 'modelworkspace');
             
             hws.assignin('freq',            2*pi*frequency);
             hws.assignin('imageData',       obj.Scene.image_filt_samp);
@@ -229,16 +235,15 @@ classdef EMD
             hws.assignin('headPhase',     	obj.Head.phase*pi/180);
         	hws.assignin('bodyAmp',         obj.Body.gain*amplitude);
             hws.assignin('bodyPhase',     	obj.Body.phase*pi/180);
-            hws.assignin('timeConstant',    obj.Eye.timeConstant);
             hws.assignin('temporalFilt',    obj.Eye.temporalFilt);
             hws.assignin('outputTimeList',  obj.Motion.recordTime:obj.Motion.stepSize:obj.Motion.stopTime);
             hws.assignin('setStopTime',     obj.Motion.stopTime);
             
-            set_param(mdl,'StopTime','setStopTime','OutputOption',...
+            set_param(SLX,'StopTime','setStopTime','OutputOption',...
                           'SpecifiedOutputTimes','OutputTimes','outputTimeList');
 
             % Run model
-            emd_output = sim(mdl);
+            emd_output = sim(SLX);
             obj.Output.all = emd_output;
             obj.Output.summedEMD = squeeze(emd_output.summedReichardtOutput.Data);
             obj.Output.time = emd_output.tout;
@@ -327,6 +332,7 @@ classdef EMD
                        '      Mag = ' num2str(round(obj.Output.mag,5)) , ...
                        '      Phs = '   num2str(round(rad2deg(obj.Output.phase),5)) , ...
                        '      r^{2} = ' num2str(round(obj.Output.r2,5))])
+                   
                 xlim([x(1) x(end)])
                 ylim(1.1*max(abs(y))*[-1 1])
                 seenAngleN = max(abs(y))*obj.Output.all.seenAngle.Data(2:end)./max(abs(obj.Output.all.seenAngle.Data(2:end)));
