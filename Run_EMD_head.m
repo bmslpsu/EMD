@@ -333,7 +333,7 @@ plot(newfreq_Head,squeeze(gain_Head_fit),'g--','LineWidth',2)
 axes(ax(2))
 plot(newfreq_Head,squeeze(phase_Head_fit),'g--','LineWidth',2)
 
-save(fullfile(mfilename('fullpath'),'EMD_TF_Model.mat'), 'FRF_fit_Raw', 'FRF_fit_Head')
+% save(fullfile(mfilename('fullpath'),'EMD_TF_Model.mat'), 'FRF_fit_Raw', 'FRF_fit_Head')
 % save('EMD_TF_Model.mat','FRF_fit_Raw', 'FRF_fit_Head')
 
 end
