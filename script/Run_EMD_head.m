@@ -9,7 +9,7 @@ function [FRF_fit_Raw,FRF_fit_Head] = Run_EMD_head()
 
 %% EMD Properties
 % Eye
-animal          = 'fly';
+model           = 1;        % delay only, no photoreceptor filter
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
 delay           = 35e-3;    % EMD delay
 
@@ -31,7 +31,7 @@ body_phase      = 0.0;
 
 freqRaw         = logspace(-1,2,50); % frequencies to sweep [Hz]
 
-self = EMD(animal, acceptAngle, delay);
+self = EMD(model, acceptAngle, delay);
 self = MakeImage(self,wavelength,imageHeight,imageWidth,method);
 
 nFreq           = length(freqRaw);
@@ -68,7 +68,7 @@ head_phase      = 1*[71.9088187846447 , 32.4385996720171  , 6.70463359270437 , .
 body_gain       = 0.0;
 body_phase      = 0.0;
 
-self = EMD(animal, acceptAngle, delay);
+self = EMD(model, acceptAngle, delay);
 self = MakeImage(self,wavelength,imageHeight,imageWidth,method);
 
 nFreq        	= length(freqHead);
@@ -260,7 +260,7 @@ Options = n4sidOptions;
 Options.Display = 'on';
 Options.N4Weight = 'CVA';
 Options.N4Horizon = [23 23 23];                     
-FRF_fit_Raw = n4sid(FRF_Raw, 6, Options);
+FRF_fit_Raw = n4sid(FRF_Raw, 10, Options);
 [gain_Raw_fit,phase_Raw_fit,~] = bode(FRF_fit_Raw,2*pi*freqRaw);
 axes(ax(1))
 plot(freqRaw,squeeze(gain_Raw_fit),'c--','LineWidth',2)

@@ -7,8 +7,8 @@ classdef EMD
     properties
         % Properties of the visual systen
         Model = 'reichardt_array_EMD_*.slx';
-        Eye = struct('animal', [], 'acceptAngle', [] , 'temporalFilt', [], 'timeConstant', [])
-            % animal            :   animal name for simulink model [reichardt_array_EMD_"animal".slx]
+        Eye = struct('model', [], 'acceptAngle', [] , 'temporalFilt', [], 'timeConstant', [])
+            % model             :   model # name for simulink [reichardt_array_EMD_"model#".slx]
             % acceptAngle       :   acceptance angle for spatial filter [rad]
             % temporalFilt      :   time constant for  delay 1st order low-pass temporal filters [s]
 
@@ -64,14 +64,14 @@ classdef EMD
     end
     
     methods
-        function obj = EMD(animal, acceptAngle, temporalFilt)
+        function obj = EMD(model, acceptAngle, delay)
             % EMD: Construct an instance of this class
             %  Assign inputs to properties and run initial computations
             
             % Construct EYE
-            obj.Eye.animal          = animal;
+            obj.Eye.model           = string(model);
             obj.Eye.acceptAngle 	= deg2rad(acceptAngle);
-            obj.Eye.temporalFilt	= temporalFilt;
+            obj.Eye.timeConstant	= delay;
         end
         
         function spatialFilter = MakeSpatialFilter(obj)
@@ -221,7 +221,7 @@ classdef EMD
             end
 
             % Setup model
-            SLX = strrep(obj.Model, '*', obj.Eye.animal);
+            SLX = strrep(obj.Model, '*', obj.Eye.model);
             modelpath = which(SLX);
             [modeldir,SLX,~] = fileparts(modelpath);
             cd(modeldir)
@@ -235,7 +235,7 @@ classdef EMD
             hws.assignin('headPhase',     	obj.Head.phase*pi/180);
         	hws.assignin('bodyAmp',         obj.Body.gain*amplitude);
             hws.assignin('bodyPhase',     	obj.Body.phase*pi/180);
-            hws.assignin('temporalFilt',    obj.Eye.temporalFilt);
+            hws.assignin('timeConstant',    obj.Eye.timeConstant);
             hws.assignin('outputTimeList',  obj.Motion.recordTime:obj.Motion.stepSize:obj.Motion.stopTime);
             hws.assignin('setStopTime',     obj.Motion.stopTime);
             

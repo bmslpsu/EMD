@@ -19,3 +19,9 @@ model/fly/reichardt_array_EMD_fly.slxc
 simulation/AnalyticalEMD_Egelhaaf.mlx
 model/fly/slprj/accel/reichardt_array_EMD_fly/reichardt_array_EMD_fly_top_vm.bc
 model/fly/reichardt_array_EMD_fly.slxc
+*.mat
+*.l
+*.xml
+*.tmw
+*.bc
+*.slxc
