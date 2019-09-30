@@ -9,7 +9,7 @@ function [FRF_fit_Raw,FRF_fit_Head] = Run_EMD_head()
 
 %% EMD Properties
 % Eye
-model           = 2;        % delay only, no photoreceptor filter
+model           = 1;        % delay only, no photoreceptor filter
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
 delay           = 35e-3;    % EMD delay
 
@@ -78,7 +78,7 @@ R2_Head         = nan(nFreq,1);
 for kk = 1:nFreq
     self = Run(self, freqHead(kk), amplitude, head_gain(kk), head_phase(kk), body_gain, body_phase);
     self = FitFixedSine(self,debug);
-        
+   	
     Mag_Head(kk)     = self.Output.mag;
     Phase_Head(kk)   = self.Output.phase;
     R2_Head(kk)      = self.Output.r2;

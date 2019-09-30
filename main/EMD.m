@@ -25,7 +25,7 @@ classdef EMD
             % image_filt_samp  	:	spatially filtered grating sample
             % imageSize         :	image dimensions
             
-        % Properties of the visual motion    
+        % Properties of the visual motion
        	Motion = struct('frequency',  [] , 'period',   [] , 'amplitude', [] , 'n_cycles', [] , ...
                         'recordTime', [] , 'stopTime', [] , 'stepSize',  [] );
             % frequency         :	frequency of visual scene motion
@@ -37,13 +37,13 @@ classdef EMD
             % recordTime        :   time to record [s]
             % stopTime          :   time to stop [s]
             % stepSize          :   model step size [s]
-      	
+            
      	% Properties of head motion
         Head = struct('gain', [] ,'phase', [])   
             % gain              :	head gain
             % phase             :	head phase
             
-       	% Properties of body motion 
+       	% Properties of body motion
         Body = struct('gain', [] ,'phase', [])   
             % gain              :	body gain
             % phase             :	body phase
