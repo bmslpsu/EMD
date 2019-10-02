@@ -40,7 +40,7 @@ Phase_Raw       = nan(nFreq,1);
 R2_Raw          = nan(nFreq,1);
 SummedEMD       = cell(nFreq,1);
 FitResult       = cell(nFreq,1);
-for kk = 1:nFreq
+for kk = 30:nFreq
     self = Run(self, freqRaw(kk), amplitude, head_gain, head_phase, body_gain, body_phase);
     self = FitFixedSine(self,debug);
 	

@@ -69,16 +69,16 @@ classdef EMD < dynamicprops
             hws.assignin('Head',            obj.Head.timeseries);
             hws.assignin('Body',            obj.Body.timeseries);
             
-        	hws.assignin('stimAmp',     	obj.Stimulus.amplitude);
-            hws.assignin('freq',            2*pi*obj.Stimulus.frequency);
+%         	hws.assignin('stimAmp',     	obj.Stimulus.amplitude);
+%             hws.assignin('freq',            2*pi*obj.Stimulus.frequency);
             
             hws.assignin('low_delay',       obj.Eye.low_delay);
             hws.assignin('high_delay',     	obj.Eye.high_delay);
             hws.assignin('photo_b',     	obj.Eye.photo_tf{1});
             hws.assignin('photo_a',     	obj.Eye.photo_tf{2});
             
-            hws.assignin('outputTimeList',  obj.Stimulus.time);
-            hws.assignin('setStopTime',     obj.Stimulus.time(end));
+            hws.assignin('outputTimeList',  obj.Stimulus.recordTime:obj.Stimulus.stepSize:obj.Stimulus.stopTime);
+            hws.assignin('setStopTime',     obj.Stimulus.stopTime);
             
             set_param(SLX,'StopTime','setStopTime','OutputOption',...
                           'SpecifiedOutputTimes','OutputTimes','outputTimeList');
@@ -145,7 +145,8 @@ classdef EMD < dynamicprops
                    
                 xlim([x(1) x(end)])
                 ylim(1.1*max(abs(y))*[-1 1])
-                seenAngleN = max(abs(y))*obj.Output.all.seenAngle.Data(2:end)./max(abs(obj.Output.all.seenAngle.Data(2:end)));
+                seenAngle = squeeze(obj.Output.all.seenAngle.Data);
+                seenAngleN = max(abs(y))*seenAngle(2:end)./max(abs(seenAngle(2:end)));
                 plot(obj.Output.time(2:end),seenAngleN ,'--b')
                 plot(fitresult, x ,y ,'.k')
                 

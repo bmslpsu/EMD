@@ -108,18 +108,18 @@ classdef Scene < dynamicprops
             % Take middle row of filtered image
             obj.image_filt_samp = obj.image_filt(ceil(obj.image_size(1)/2),:);
             
-            % Create first order high pass filter
-            HPcut           = 0.0075; % cut off frequency for 1 pole analogue high pass filter
-            [numHP,denHP]   = bilinear([1 0],[1 HPcut],1); % create digital version of filter
-
-            % High pass filter spatial data with repeats of grating at both ends to avoid end 
-            % effects when filtering
-            len         = length(obj.image_filt_samp);
-            temp    	= repmat(obj.image_filt_samp,1,3);
-            tempFilt   	= filtfilt(numHP,denHP,temp);
-            
-            % Sampled Image
-            obj.image_filt_samp	= tempFilt(:,len+1:len*2);
+%             % Create first order high pass filter
+%             HPcut           = 0.0075; % cut off frequency for 1 pole analogue high pass filter
+%             [numHP,denHP]   = bilinear([1 0],[1 HPcut],1); % create digital version of filter
+% 
+%             % High pass filter spatial data with repeats of grating at both ends to avoid end 
+%             % effects when filtering
+%             len         = length(obj.image_filt_samp);
+%             temp    	= repmat(obj.image_filt_samp,1,3);
+%             tempFilt   	= filtfilt(numHP,denHP,temp);
+%             
+%             % Sampled Image
+%             obj.image_filt_samp	= tempFilt(:,len+1:len*2);
                         
         end
         
@@ -131,7 +131,7 @@ classdef Scene < dynamicprops
             % Construct filter
             filtCoord       = linspace(-0.5*obj.Eye.acceptAngle, 0.5*obj.Eye.acceptAngle, obj.image_size(1)); % rad
             [xCoord,yCoord] = meshgrid(filtCoord, filtCoord);
-            sigma           = obj.Eye.acceptAngle/((2*log(2)).^0.5);
+            sigma           = obj.Eye.acceptAngle/(4*(2*log(2)).^0.5);
             spatialFilter   = exp(-(xCoord.^2+yCoord.^2)/(2*sigma^2));
             
             % Normalize filter

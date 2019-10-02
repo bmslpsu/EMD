@@ -9,11 +9,11 @@ classdef Motion < dynamicprops
         time        % time steps
         stepSize    % time step size
         timeseries  % timeseries for of data/time
+      	recordTime
+        stopTime
     end
     
  	properties (Access = private)
-        recordTime
-        stopTime
     end
     
     methods
@@ -78,8 +78,11 @@ classdef Motion < dynamicprops
                     obj.stopTime 	= 2;
                     obj.stepSize    = (obj.stopTime - obj.recordTime)/1000;
                     obj.time        = (obj.recordTime:obj.stepSize:obj.stopTime)';
-                    obj.data        = obj.velocity*obj.time;
-
+                    obj.data        = obj.velocity*obj.time - obj.velocity*obj.recordTime;
+                    
+                    obj.time        = [0 ; obj.time];
+                    obj.data        = [0 ; obj.data];
+                    
                 elseif strcmp(form,'custom') % custom motion
                     obj.data = varargin{1};
                     obj.time = varargin{2};
