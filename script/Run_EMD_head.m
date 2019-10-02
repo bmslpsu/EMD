@@ -9,7 +9,7 @@ function [FRF_fit_Raw,FRF_fit_Head] = Run_EMD_head()
 
 %% EMD Properties
 % Eye
-model           = 3;        % delay only, no photoreceptor filter
+model           = 1;        % delay only, no photoreceptor filter
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
 delay           = 35e-3;    % EMD delay
 
