@@ -84,7 +84,8 @@ classdef Scene < dynamicprops
                 if strcmp(form,'sine')
                     func = 1 + 1*sin(2*pi*obj.n_cycle*t);
                 elseif strcmp(form,'square')
-                    func = square(2*pi*obj.n_cycle*t,50);
+                    func = 1 + square(2*pi*obj.n_cycle*t,50);
+                    func(func==2) = func(func==2) - 1;
                 elseif strcmp(form,'triangle')
                     func = 1 + sawtooth(2*pi*obj.n_cycle*t,1/2);
                 else
@@ -129,7 +130,7 @@ classdef Scene < dynamicprops
             %  with a half width equal to the acceptance angle
             
             % Construct filter
-            filtCoord       = linspace(-0.5*obj.Eye.acceptAngle, 0.5*obj.Eye.acceptAngle, obj.image_size(1)); % rad
+            filtCoord       = linspace(-0.5*obj.Eye.acceptAngle, 0.5*obj.Eye.acceptAngle, obj.image_size(2)); % rad
             [xCoord,yCoord] = meshgrid(filtCoord, filtCoord);
             sigma           = obj.Eye.acceptAngle/(4*(2*log(2)).^0.5);
             spatialFilter   = exp(-(xCoord.^2+yCoord.^2)/(2*sigma^2));
@@ -155,7 +156,7 @@ classdef Scene < dynamicprops
                 imagesc(obj.image_filt)
             
         	ax(3) = subplot(3,1,3); hold on
-            title('Low + High Pass Filtered')
+            title('Low + High-pass Filtered')
             xlabel(['(' char(176) ')'])
                 imagesc(obj.image_filt_samp)
                 

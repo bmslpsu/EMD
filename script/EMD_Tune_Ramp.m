@@ -3,8 +3,8 @@ clear;close all;clc
 
 % Eye
 model = 'EMD_model_3';
-% acceptAngle = 1.1*4.6; % acceptance angle [deg]
-acceptAngle = 1;
+acceptAngle = 1.1*4.6; % acceptance angle [deg]
+% acceptAngle = 1;
 
 low_delay   = 30e-3;
 high_delay  = 0;
@@ -12,13 +12,13 @@ photo_tf    = {1,1}; % transfer function coefficents for photoreceptor response
                 
 % Image
 imgHeight = 100;   	% height of input visual field
-imgWidth = 96;   	% width of input visual field
+imgWidth = 10000; 	% width of input visual field
 form = 'square';    % spatial form
 
-wavelength = [30 60 90]; % spatial period [deg]
+wavelength = [4.5 7.5]; % spatial period [deg]
 n_wave = length(wavelength);
 
-temp_freq = logspace(-1.5,1.7,40)'; % frequencies to sweep [Hz]
+temp_freq = logspace(-1.5,1.5,25)'; % frequencies to sweep [Hz]
 velocity = temp_freq*wavelength;
 n_vel = length(velocity);
 
@@ -41,7 +41,7 @@ for jj = 1:n_wave
         SummedEMD{kk}(:,2)   = RD{kk,jj}.Output.time;
         SummedEMD{kk}(:,3)   = RD{kk,jj}.Output.all.seenAngle.Data;
 
-        Mag(kk,jj) = mean(abs(RD{kk,jj}.Output.summedEMD(end-10:end)));
+        Mag(kk,jj) = mean((RD{kk,jj}.Output.summedEMD(end-10:end)));
 
         fprintf('SP: %.2f , TP: %.2f \n', wavelength(jj), temp_freq(kk))  
     end
@@ -52,7 +52,7 @@ normM = max(abs(Mag));
 FIG = figure (1) ; clf ; hold on
 FIG.Color = 'w';
 FIG.Units = 'inches';
-FIG.Position = [200 200 4 1*2.5];
+FIG.Position = 2*[1 1 4 1*2.5];
 movegui(FIG,'center')
 clear ax
 CC = prism(n_wave);
@@ -70,3 +70,4 @@ set([XLabelHC], 'String', 'Temporal Frequency (Hz)')
 ax(1).XTick = [0.1 1 10 50];
 XTickLabels = cellstr(num2str(round(log10(ax(1).XTick(:)))));
 ylabel('EMD Response')
+legend(string(wavelength))
