@@ -102,9 +102,20 @@ classdef Scene < dynamicprops
             
           	% Make spatial filter
             obj.spatialFilter = MakeSpatialFilter(obj);
+            
+            % Make Patterns
+%             [pattern] = MakePattern_SpatFreq(60); % make patterns with spatial frequencies
+%             Pat = pattern.Pats(1,:,:,:); % only first row is needed because of symmetry
+%             obj.image_raw = squeeze(Pat(:,:,1,1));
                         
             % Filter image
             obj.image_filt = imfilter(double(obj.image_raw),obj.spatialFilter,'circular');
+%             obj.image_filt = GaussKernelFilt(obj.spatialFilter, obj.image_raw);
+            
+%             subplot(2,1,1)
+%             imagesc(obj.image_raw)
+%             subplot(2,1,2)
+%             imagesc(obj.image_filt)
 
             % Take middle row of filtered image
             obj.image_filt_samp = obj.image_filt(ceil(obj.image_size(1)/2),:);
@@ -139,6 +150,19 @@ classdef Scene < dynamicprops
             spatialFilter = spatialFilter/obj.image_size(1)^2;
         end
         
+        function spatialFilter = MakeSpatialFilter_v2(obj)
+            % MakeSpatialFilter: make spatial filter to apply to incoming images
+            %  Create a spatial filter based on a gaussian approximation of an Airy disc
+            %  with a half width equal to the acceptance angle
+            
+            % Construct filter
+            n_ommatidia = 96;
+            lp_tc = 15e-3;  % time constant of the lp-filter
+            hp_tc = 50e-3; % time constant of the hp filter, from Borst et al, 2003
+            old_eye = EYE_(rad2deg(obj.Eye.acceptAngle), lp_tc, hp_tc, n_ommatidia);
+            spatialFilter = old_eye.filt;
+        end
+        
         function [] = PlotImage(obj)
             % PlotImage: plot the visual scene
             %  Raw & filtered image comparison
@@ -160,8 +184,8 @@ classdef Scene < dynamicprops
             xlabel(['(' char(176) ')'])
                 imagesc(obj.image_filt_samp)
                 
-            set(ax,'XLim', 0.5 + [0 obj.image_size(2)], 'YLim', 0.5 + [0 obj.image_size(1)],...
-                   'XTick',[1  obj.image_size(2)], 'YTick',[1 obj.image_size(1)])
+%             set(ax,'XLim', 0.5 + [0 obj.image_size(2)], 'YLim', 0.5 + [0 obj.image_size(1)],...
+%                    'XTick',[1  obj.image_size(2)], 'YTick',[1 obj.image_size(1)])
                
             set(ax(3),'XTickLabels',{'0','360'}, 'YLim', 0.5 + [0 1], 'YTick', 1)
             

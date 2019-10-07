@@ -15,7 +15,7 @@ imgHeight = 100;   	% height of input visual field
 imgWidth = 10000; 	% width of input visual field
 form = 'square';    % spatial form
 
-wavelength = [4.5 7.5]; % spatial period [deg]
+wavelength = [45 60 90]; % spatial period [deg]
 n_wave = length(wavelength);
 
 temp_freq = logspace(-1.5,1.5,25)'; % frequencies to sweep [Hz]
