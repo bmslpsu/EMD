@@ -95,27 +95,21 @@ classdef Scene < dynamicprops
                                 
                 % Raw Image
                 obj.image_raw = repmat(func,obj.image_size(1),1);
+                %scale = max(max(obj.image_raw));
+
             else
                 % Image Size
                 obj.image_size = size(obj.image_raw);
             end
             
           	% Make spatial filter
-            obj.spatialFilter = MakeSpatialFilter(obj);
-            
-            % Make Patterns
-%             [pattern] = MakePattern_SpatFreq(60); % make patterns with spatial frequencies
-%             Pat = pattern.Pats(1,:,:,:); % only first row is needed because of symmetry
-%             obj.image_raw = squeeze(Pat(:,:,1,1));
-                        
+            obj.spatialFilter = MakeSpatialFilter_v2(obj);
+%             [sigma,~] = MakeSpatialFilter_v3(obj);
+                                   
             % Filter image
-            obj.image_filt = imfilter(double(obj.image_raw),obj.spatialFilter,'circular');
-%             obj.image_filt = GaussKernelFilt(obj.spatialFilter, obj.image_raw);
-            
-%             subplot(2,1,1)
-%             imagesc(obj.image_raw)
-%             subplot(2,1,2)
-%             imagesc(obj.image_filt)
+%             obj.image_filt = imfilter(double(obj.image_raw),obj.spatialFilter,'circular');
+            obj.image_filt = GaussKernelFilt(obj.spatialFilter, obj.image_raw);
+%             obj.image_filt = imgaussfilt(obj.image_raw,sigma);
 
             % Take middle row of filtered image
             obj.image_filt_samp = obj.image_filt(ceil(obj.image_size(1)/2),:);
@@ -141,7 +135,7 @@ classdef Scene < dynamicprops
             %  with a half width equal to the acceptance angle
             
             % Construct filter
-            filtCoord       = linspace(-0.5*obj.Eye.acceptAngle, 0.5*obj.Eye.acceptAngle, obj.image_size(2)); % rad
+            filtCoord       = linspace(-0.5*obj.Eye.acceptAngle, 0.5*obj.Eye.acceptAngle, obj.image_size(1)); % rad
             [xCoord,yCoord] = meshgrid(filtCoord, filtCoord);
             sigma           = obj.Eye.acceptAngle/(4*(2*log(2)).^0.5);
             spatialFilter   = exp(-(xCoord.^2+yCoord.^2)/(2*sigma^2));
@@ -161,6 +155,20 @@ classdef Scene < dynamicprops
             hp_tc = 50e-3; % time constant of the hp filter, from Borst et al, 2003
             old_eye = EYE_(rad2deg(obj.Eye.acceptAngle), lp_tc, hp_tc, n_ommatidia);
             spatialFilter = old_eye.filt;
+        end
+        
+        function [sigma_1,mu] = MakeSpatialFilter_v3(obj)
+            % MakeSpatialFilter: make spatial filter to apply to incoming images
+            %  Create a spatial filter based on a gaussian approximation of an Airy disc
+            %  with a half width equal to the acceptance angle
+            
+            % Construct filter
+            syms t tau s t_p sigma_1 rho zeta
+            p = obj.Eye.acceptAngle; % acceptance angle
+            z = (-(50):0.01:(50))';
+            G = vpa(exp(-(4*log10(2)*zeta^(2))/rho^(2)),4);
+            G_num = double(subs(G,{rho zeta},{p z}));
+            [sigma_1, mu] = gaussfit( z, G_num, 5, 0 );
         end
         
         function [] = PlotImage(obj)
@@ -187,7 +195,8 @@ classdef Scene < dynamicprops
 %             set(ax,'XLim', 0.5 + [0 obj.image_size(2)], 'YLim', 0.5 + [0 obj.image_size(1)],...
 %                    'XTick',[1  obj.image_size(2)], 'YTick',[1 obj.image_size(1)])
                
-            set(ax(3),'XTickLabels',{'0','360'}, 'YLim', 0.5 + [0 1], 'YTick', 1)
+%             set(ax(3),'XTickLabels',{'0','360'})
+            set(ax,'YLim', 0.5 + [0 1], 'YTick', 1,'XLim', [1-0.5 obj.image_size(2)+0.5])
             
            	linkaxes(ax(1:3),'x')
             linkaxes(ax(1:2),'xy')
