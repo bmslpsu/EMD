@@ -150,10 +150,11 @@ classdef Scene < dynamicprops
             %  with a half width equal to the acceptance angle
             
             % Construct filter
-            n_ommatidia = 96;
+            n_ommatidia = 72;
             lp_tc = 15e-3;  % time constant of the lp-filter
             hp_tc = 50e-3; % time constant of the hp filter, from Borst et al, 2003
-            old_eye = EYE_(rad2deg(obj.Eye.acceptAngle), lp_tc, hp_tc, n_ommatidia);
+            res = obj.image_size(2)/96;
+            old_eye = EYE_(rad2deg(obj.Eye.acceptAngle), lp_tc, hp_tc, n_ommatidia, res);
             spatialFilter = old_eye.filt;
         end
         
@@ -191,15 +192,18 @@ classdef Scene < dynamicprops
             title('Low + High-pass Filtered')
             xlabel(['(' char(176) ')'])
                 imagesc(obj.image_filt_samp)
+            
+        	set(ax(1),'XLim', 0.5 + [0 obj.image_size(2)])
+        	set(ax(2:3),'XLim', 0.5 + [0 length(obj.image_filt_samp)])
                 
 %             set(ax,'XLim', 0.5 + [0 obj.image_size(2)], 'YLim', 0.5 + [0 obj.image_size(1)],...
 %                    'XTick',[1  obj.image_size(2)], 'YTick',[1 obj.image_size(1)])
                
 %             set(ax(3),'XTickLabels',{'0','360'})
-            set(ax,'YLim', 0.5 + [0 1], 'YTick', 1,'XLim', [1-0.5 obj.image_size(2)+0.5])
+%             set(ax,'YLim', 0.5 + [0 1], 'YTick', 1,'XLim', [1-0.5 obj.image_size(2)+0.5])
             
-           	linkaxes(ax(1:3),'x')
-            linkaxes(ax(1:2),'xy')
+%            	linkaxes(ax(1:3),'x')
+%             linkaxes(ax(1:2),'xy')
             
             hold off
             

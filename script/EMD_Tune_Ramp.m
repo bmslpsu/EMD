@@ -4,15 +4,15 @@ clear;close all;clc
 % Eye
 model = 'EMD_model_3';
 acceptAngle = 1.1*4.6; % acceptance angle [deg]
-acceptAngle = 1;
+% acceptAngle = 5;
 
-low_delay   = 30e-3;
+low_delay   = 15e-3;
 high_delay  = 0;
 photo_tf    = {1,1}; % transfer function coefficents for photoreceptor response
 
 % Image
 imgHeight = 1;   	% height of input visual field
-imgWidth = 96; 	% width of input visual field
+imgWidth = 10*96;      % width of input visual field
 form = 'square';    % spatial form
 
 wavelength = [7.5 15 30 45 60 90]; % spatial period [deg]
@@ -58,7 +58,7 @@ clear ax
 CC = lines(n_wave);
 ax(1) = subplot(1,1,1); hold on
 for jj = 1:n_wave
-        plot(temp_freq,abs(Mag(:,jj)),'LineWidth',1.5,'Color',CC(jj,:))
+        plot(temp_freq,abs(Mag(:,jj)),'LineWidth',2,'Color',CC(jj,:))
         %[mm,midx] = max(abs(Mag_Raw));
         %plot([temp_freq(midx) , temp_freq(midx)] , [0 , mm] , '--k','LineWidth',1)
         %plot([temp_freq(1) , temp_freq(midx)] , [mm , mm] , '--k','LineWidth',1)
