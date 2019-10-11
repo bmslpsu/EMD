@@ -3,8 +3,8 @@ clear;close all;clc
 
 % Eye
 model = 'EMD_model_3';
-acceptAngle = 1.1*4.6; % acceptance angle [deg]
-% acceptAngle = 5;
+% acceptAngle = 1.1*4.6; % acceptance angle [deg]
+acceptAngle = 1;
 
 low_delay   = 15e-3;
 high_delay  = 0;
@@ -15,7 +15,7 @@ imgHeight = 1;   	% height of input visual field
 imgWidth = 10*96;      % width of input visual field
 form = 'square';    % spatial form
 
-wavelength = [7.5 15 30 45 60 90]; % spatial period [deg]
+wavelength = [3.75 7.5 15 30 45 60 90]; % spatial period [deg]
 n_wave = length(wavelength);
 
 temp_freq = logspace(-1.5,1.5,25)'; % frequencies to sweep [Hz]

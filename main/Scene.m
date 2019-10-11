@@ -104,7 +104,6 @@ classdef Scene < dynamicprops
             
           	% Make spatial filter
             obj.spatialFilter = MakeSpatialFilter_v2(obj);
-%             [sigma,~] = MakeSpatialFilter_v3(obj);
                                    
             % Filter image
 %             obj.image_filt = imfilter(double(obj.image_raw),obj.spatialFilter,'circular');
@@ -150,11 +149,10 @@ classdef Scene < dynamicprops
             %  with a half width equal to the acceptance angle
             
             % Construct filter
-            n_ommatidia = 72;
             lp_tc = 15e-3;  % time constant of the lp-filter
             hp_tc = 50e-3; % time constant of the hp filter, from Borst et al, 2003
             res = obj.image_size(2)/96;
-            old_eye = EYE_(rad2deg(obj.Eye.acceptAngle), lp_tc, hp_tc, n_ommatidia, res);
+            old_eye = EYE_(rad2deg(obj.Eye.acceptAngle), lp_tc, hp_tc, res);
             spatialFilter = old_eye.filt;
         end
         
