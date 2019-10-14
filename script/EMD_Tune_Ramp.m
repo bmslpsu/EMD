@@ -16,6 +16,7 @@ imgWidth = 10*96;      % width of input visual field
 form = 'square';    % spatial form
 
 wavelength = [3.75 7.5 15 30 45 60 90]; % spatial period [deg]
+wavelength = [90]; % spatial period [deg]
 n_wave = length(wavelength);
 
 temp_freq = logspace(-1.5,1.5,25)'; % frequencies to sweep [Hz]
@@ -71,3 +72,19 @@ ax(1).XTick = [0.1 1 10 50];
 XTickLabels = cellstr(num2str(round(log10(ax(1).XTick(:)))));
 ylabel('EMD Response')
 legend(string(wavelength))
+
+%%
+FIG = figure (1) ; clf ; hold on
+FIG.Color = 'w';
+hold on
+waveIdx = 15;
+h = plot(RD{waveIdx}.Output.all.reichardtOutput.Time,abs(squeeze(RD{waveIdx}.Output.all.reichardtOutput.Data)));
+plot(SummedEMD{waveIdx}(:,2), abs(SummedEMD{waveIdx}(:,1)), 'k', 'LineWidth', 1.5)
+
+xlabel('Time (s)')
+ylabel('EMD Response')
+
+
+
+
+
