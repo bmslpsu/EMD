@@ -38,8 +38,8 @@ classdef VSys
             %   
             obj.image_size              = image_size;
             obj.res                     = 3.75/(obj.image_size/96);
-            % obj.upsample                = 100*obj.res/3.75;
-            obj.upsample                = 10;
+            obj.upsample                = 100*obj.res/3.75;
+            % obj.upsample                = 10;
             obj.interommatidial_angle   = interommatidial_angle;
             obj.acceptance_angle        = acceptance_angle;
             obj.n_ommatidia          	= round(360/obj.interommatidial_angle);
@@ -187,7 +187,7 @@ classdef VSys
             
             obj = MakeColormap(obj,2,100);
             colormap(obj.cmap)
-            % colormap(parula)
+            colormap(parula)
             
             ax(1) = subplot(4,2,[1,3,5]); hold on ; title('Raw Space-Time')
                 imagesc(squeeze(obj.image_raw)')
