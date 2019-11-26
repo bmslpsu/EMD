@@ -9,9 +9,9 @@ function [FRF_fit_Raw,FRF_fit_Head] = Run_EMD_head()
 
 %% EMD Properties
 % Eye
-model           = 1;        % delay only, no photoreceptor filter
+model           = 2;        % delay only, no photoreceptor filter
 acceptAngle     = 1.1*4.6;  % acceptance angle[deg]
-delay           = 35e-3;    % EMD delay
+delay           = 55e-3;    % EMD delay
 
 % Image
 wavelength      = 30;       % spatial period [deg]
@@ -29,7 +29,7 @@ head_phase      = 0.0;
 body_gain       = 0.0;
 body_phase      = 0.0;
 
-freqRaw         = logspace(-1,2,50); % frequencies to sweep [Hz]
+freqRaw = logspace(-1,2,50); % frequencies to sweep [Hz]
 
 self = EMD(model, acceptAngle, delay);
 self = MakeImage(self,wavelength,imageHeight,imageWidth,method);
@@ -40,7 +40,7 @@ Phase_Raw       = nan(nFreq,1);
 R2_Raw          = nan(nFreq,1);
 SummedEMD       = cell(nFreq,1);
 FitResult       = cell(nFreq,1);
-for kk = 30:nFreq
+for kk = 1:nFreq
     self = Run(self, freqRaw(kk), amplitude, head_gain, head_phase, body_gain, body_phase);
     self = FitFixedSine(self,debug);
 	
@@ -265,7 +265,7 @@ FRF_fit_Raw = n4sid(FRF_Raw, 10, Options);
 axes(ax(1))
 plot(freqRaw,squeeze(gain_Raw_fit),'c--','LineWidth',2)
 axes(ax(2))
-plot(freqRaw,squeeze(phase_Raw_fit) - 360,'c--','LineWidth',2)
+plot(freqRaw,squeeze(phase_Raw_fit),'c--','LineWidth',2)
 
 % State space model estimation: HEAD
 Options = n4sidOptions;
