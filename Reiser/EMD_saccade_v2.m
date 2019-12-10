@@ -21,7 +21,7 @@ pattern = MakePattern_SpatFreq(wavelength,[],res);
 Pat = (pattern.Pats(1,:,:,:));
 
 % Set temporal paramters
-temp_freq = logspace(-1.1,1.9,20)'; % temporal frequencies [Hz]
+temp_freq = logspace(-1.1,1.9,10)'; % temporal frequencies [Hz]
 vel = temp_freq * wavelength; % velocities for each wavelength [deg/s]
 
 n_vel = size(vel,1); % # of velocities per wavelength
@@ -30,11 +30,8 @@ T = 5.2; % simulation time [s]
 pause_T = 0.2; % pause time [s]
 tt = linspace(0,T,T*Fs)';
 
-ss_gain = []
-
 % Loop through angles
 showplot = false;
-sim_data_head(:,:).HR_ss = nan(n_vel,n_angle);
 sim_data_raw(:,:).HR_ss = nan(n_vel,n_angle);
 pp = 1;
 for kk = 1:n_angle
@@ -45,24 +42,45 @@ for kk = 1:n_angle
         Func = int64(MakePosFunction_Vel(step*vel(jj),T,Fs,true,step,false));
         Func(1:pause_T*Fs) = Func(pause_T*Fs);
         
-        Func_head = int64(MakePosFunction_Vel(0.4*step*vel(jj),T,Fs,true,step,false));
-        Func_head(1:pause_T*Fs) = Func_head(pause_T*Fs);
-        
         % Run EMD
         fly_emd_raw = Run(fly_emd,Pat,Func,Fs,showplot);
-       	fly_emd_head = Run(fly_emd,Pat,Func_head,Fs,showplot);
 
         % Get steady-state data
         sim_data_raw(jj,kk).HR_ss = fly_emd_raw.HR_ss;
         sim_data_raw(jj,kk).HR_mean = fly_emd_raw.HR_mean;
-        
-        sim_data_head(jj,kk).HR_ss = fly_emd_head.HR_ss;
-        sim_data_head(jj,kk).HR_mean = fly_emd_head.HR_mean;
-        
+
         fprintf('%i:  wave=%.2f , vel=%.2f , freq=%.2f \n', pp, wavelength, vel(jj), temp_freq(jj))
         pp = pp + 1;
     end
 end
+%%
+% HEAD
+wavelength_head = 30;
+vel_head  = [60 90 120 150];
+gain_head = [0.38665 , 0.30621 , 0.26923 , 0.22003 , 0.18886];
+sim_data_head(:,:).HR_ss = nan(n_vel,n_angle);
+temp_freq_head = vel_head./wavelength_head; % temporal frequencies [Hz]
+n_vel_head = length(vel_head);
+for kk = 1:n_angle
+  	% Construct EMD object with set parameters
+   	fly_emd_head = VSys(interommatidial_angle(kk), acceptance_angle, n_ommatidia, image_size, lp_tc, hp_tc, true);
+    for jj = 1:n_vel_head
+        % Make velocity input       
+        Func_head = int64(MakePosFunction_Vel((1-gain_head(jj))*step*vel_head(jj),T,Fs,true,step,false));
+        Func_head(1:pause_T*Fs) = Func_head(pause_T*Fs);
+        
+        % Run EMD
+       	fly_emd_head = Run(fly_emd,Pat,Func_head,Fs,showplot);
+
+        % Get steady-state data       
+        sim_data_head(jj,kk).HR_ss = fly_emd_head.HR_ss;
+        sim_data_head(jj,kk).HR_mean = fly_emd_head.HR_mean;
+        
+        fprintf('%i:  wave=%.2f , vel=%.2f , freq=%.2f \n', pp, wavelength, vel_head(jj), temp_freq_head(jj))
+        pp = pp + 1;
+    end
+end
+
 
 %% Figure
 fig(1) = figure(300); clf
