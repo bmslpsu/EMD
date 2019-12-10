@@ -6,7 +6,7 @@ set(0,'DefaultFigureWindowStyle','docked')
 res = 4; % image resolution scale (res x 96);
 image_size = res*96; % image size
 step = 3.75/res; % step size
-interommatidial_angle = [4.5 7.5 9]; % interommatidial angle [deg]
+interommatidial_angle = [4.5]; % interommatidial angle [deg]
 n_angle = length(interommatidial_angle);
 k = 1.1;
 % acceptance_angle = k*interommatidial_angle; % acceptance angle [deg]
@@ -16,7 +16,7 @@ lp_tc = 40e-3; % time constant of the lp-filter
 hp_tc = []; % time constant of the hp filter, from Borst et al, 2003
 
 % Make spatial visual inputs
-wavelength = 7.5;
+wavelength = 30;
 pattern = MakePattern_SpatFreq(wavelength,[],res);
 Pat = (pattern.Pats(1,:,:,:));
 
@@ -32,7 +32,8 @@ tt = linspace(0,T,T*Fs)';
 
 % Loop through angles
 showplot = false;
-sim_data(:,:).HR_ss = nan(n_vel,n_angle);
+sim_data_head(:,:).HR_ss = nan(n_vel,n_angle);
+sim_data_raw(:,:).HR_ss = nan(n_vel,n_angle);
 pp = 1;
 for kk = 1:n_angle
   	% Construct EMD object with set parameters
@@ -42,12 +43,19 @@ for kk = 1:n_angle
         Func = int64(MakePosFunction_Vel(step*vel(jj),T,Fs,true,step,false));
         Func(1:pause_T*Fs) = Func(pause_T*Fs);
         
-        % Run EMD
-        fly_emd = Run(fly_emd,Pat,Func,Fs,showplot);
+        Func_head = int64(MakePosFunction_Vel(0.4*step*vel(jj),T,Fs,true,step,false));
+        Func_head(1:pause_T*Fs) = Func_head(pause_T*Fs);
         
+        % Run EMD
+        fly_emd_raw = Run(fly_emd,Pat,Func,Fs,showplot);
+       	fly_emd_head = Run(fly_emd,Pat,Func_head,Fs,showplot);
+
         % Get steady-state data
-        sim_data(jj,kk).HR_ss = fly_emd.HR_ss;
-        sim_data(jj,kk).HR_mean = fly_emd.HR_mean;
+        sim_data_raw(jj,kk).HR_ss = fly_emd_raw.HR_ss;
+        sim_data_raw(jj,kk).HR_mean = fly_emd_raw.HR_mean;
+        
+        sim_data_head(jj,kk).HR_ss = fly_emd_head.HR_ss;
+        sim_data_head(jj,kk).HR_mean = fly_emd_head.HR_mean;
         
         fprintf('%i:  wave=%.2f , vel=%.2f , freq=%.2f \n', pp, wavelength, vel(jj), temp_freq(jj))
         pp = pp + 1;
@@ -64,7 +72,8 @@ ax(1) = subplot(2,1,1); hold on
     ylabel('EMD response (arb. units)')
     box off
     for kk = 1:n_angle
-       plot(temp_freq, [sim_data(:,kk).HR_ss], 'o-', 'Color', CC(kk,:), 'LineWidth', 2, 'MarkerSize', 3)
+       plot(temp_freq, [sim_data_raw(:,kk).HR_ss], 'o-', 'Color', 'k', 'LineWidth', 2, 'MarkerSize', 3)
+       plot(temp_freq, [sim_data_head(:,kk).HR_ss], 'o-', 'Color', CC(kk,:), 'LineWidth', 2, 'MarkerSize', 3)
     end
     leg = legend(strcat(string(interommatidial_angle),char(176)));
     leg.Box = 'off';
@@ -76,11 +85,12 @@ ax(2) = subplot(2,1,2); hold on
     xlabel('velocity (deg s^-^1)','color', 'k')
     ylabel('EMD response (arb. units)','color','k')
     for kk = 1:n_angle
-       plot(vel, [sim_data(:,kk).HR_ss], 'o-', 'Color', CC(kk,:), 'LineWidth', 2, 'MarkerSize', 3)
+       plot(vel, [sim_data_raw(:,kk).HR_ss], 'o-', 'Color', 'k', 'LineWidth', 2, 'MarkerSize', 3)
+       plot(vel, [sim_data_head(:,kk).HR_ss], 'o-', 'Color', CC(kk,:), 'LineWidth', 2, 'MarkerSize', 3)
     end
     set(ax(2), 'XTick', [10, 100, 1000])
     set(ax(2), 'XTickLabel', [10, 100, 1000])
 
 set(ax,'xscale','log','FontSize',10)
 set(ax,'XGrid','on','Xcolor',[.3 .3 .3])
-set(ax,'YLim',[-200 300]);
+% set(ax,'YLim',[-200 300]);
