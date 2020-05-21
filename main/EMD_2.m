@@ -1,5 +1,5 @@
-classdef EMD
-    % EMD: elementary-motion-detector simulation
+classdef EMD_2
+    % EMD_2: elementary-motion-detector simulation
     %  	Simulates the effect of head motion on the output of motion vision system. 
     %   The model consists of a rotating circular 2D array of evenly spaced Reichardt 
     %   detectors sampling a rotating grating.
@@ -64,94 +64,50 @@ classdef EMD
     end
     
     methods
-        function obj = EMD(model, acceptAngle, delay)
+        function obj = EMD_2(model, acceptAngle, interommatidial, delay)
             % EMD: Construct an instance of this class
             %  Assign inputs to properties and run initial computations
             
             % Construct EYE
             obj.Eye.model           = string(model);
-            obj.Eye.acceptAngle 	= deg2rad(acceptAngle);
+            obj.Eye.acceptAngle 	= acceptAngle;
+            obj.Eye.interommatidial = interommatidial;
             obj.Eye.timeConstant	= delay;
         end
-        
-        function spatialFilter = MakeSpatialFilter(obj)
-            % MakeSpatialFilter: make spatial filter to apply to incoming images
-            %  Create a spatial filter based on a gaussian approximation of an Airy disc
-            %  with a half width equal to the acceptance angle
-            
-            % Construct filter
-            filtCoord       = linspace(-0.5*obj.Eye.acceptAngle,0.5*obj.Eye.acceptAngle,... % rad
-                                                obj.Scene.imageSize(1));
-            [xCoord,yCoord] = meshgrid(filtCoord,filtCoord);
-            sigma           = obj.Eye.acceptAngle/((2*log(2)).^0.5);
-            spatialFilter   = exp(-(xCoord.^2+yCoord.^2)/(2*sigma^2));
-            
-            % Normalize filter
-            spatialFilter = spatialFilter/obj.Scene.imageSize(1)^2;
-        end
-        
-        function obj = MakeImage(obj,wavelength,imageHeight,imageWidth,method)
+               
+        function obj = MakeImage(obj,wave,imageHeight,imageWidth,method)
             % MakeImage: create the visual scene
             %  Make sinusoidal vertical bar grating with set spatial period
             %  and image size
             %  Spatially filter the image based on the properties of the
             %  organism's EYE
             
-            if nargin<5
-                method = 'sine'; % default
+            if nargin < 5
+                method = 'square'; % default
             end
             
             % Assign properties
           	obj.Scene.form              = method;
-            obj.Scene.spatialPeriod   	= wavelength;
-            obj.Scene.spatialFrequency	= 1./wavelength;
+            obj.Scene.spatialPeriod   	= wave;
+            obj.Scene.spatialFrequency	= 1./wave;
             obj.Scene.imageSize       	= [imageHeight,imageWidth];
             
-            % Make spatial filter
-            obj.Scene.spatialFilter     = MakeSpatialFilter(obj);
-            
             % Round to give whole numbers of cycles around sphere
-            obj.Scene.n_cycle = 360./wavelength;
+            obj.Scene.n_cycle = 360./wave;
             
-            % Define sinewave range
-            t = linspace(0,1,imageWidth);
+            % Make image
+            [image_data, ~] = make_image(wave, obj.Scene.imageSize, 2, 1, false);
+            obj.Scene.image_raw = image_data(:,:,1,1);
+
+            % Construct EYE object
+            obj.Scene.spatialFilter = eye_model(obj.Eye.interommatidial, obj.Eye.acceptAngle, ...
+                                        obj.Scene.imageSize(2), 78, false);
+
+            % Spatially filter image with eye
+            obj.Scene.image_filt = EyeFilt(obj.Scene.spatialFilter , obj.Scene.image_raw);
             
-            % Create the sinusoidal grating image
-            if strcmp(method,'sine')
-                func = 1 + 1*sin(2*pi*obj.Scene.n_cycle*t);
-            elseif strcmp(method,'square')
-                func = square(2*pi*obj.Scene.n_cycle*t,50);
-            elseif strcmp(method,'triangle')
-                func = 1 + sawtooth(2*pi*obj.Scene.n_cycle*t,1/2);
-            else
-                func = 1 + 1*sin(2*pi*obj.Scene.n_cycle*t);
-                warning('"method" must be "sine" , " square" , or "triangle" ... using default "sine"')
-            end
-
-            image_raw = repmat(func,imageHeight,1);
-            
-            % Filter image
-            image_filt = imfilter(double(image_raw),obj.Scene.spatialFilter,'circular');
-
-            % Take middle row of filtered image
-            image_filt_samp = image_filt(ceil(imageHeight/2),:);
-            
-            % Create first order high pass filter
-            HPcut           = 0.0075; % cut off frequency for 1 pole analogue high pass filter
-            [numHP,denHP]   = bilinear([1 0],[1 HPcut],1); % create digital version of filter
-
-            % High pass filter spatial data with repeats of grating at both ends to avoid end 
-            % effects when filtering
-            len                 = length(image_filt_samp);
-            temp                = repmat(image_filt_samp,1,3);
-            tempFilt            = filtfilt(numHP,denHP,temp);
-            image_filt_samp     = tempFilt(:,len+1:len*2);
-
             % Create output
-            obj.Scene.image_raw           = image_raw;
-            obj.Scene.image_filt          = image_filt;
-            obj.Scene.image_filt_samp     = image_filt_samp;
-            
+            obj.Scene.image_filt_samp = obj.Scene.image_filt(1,:);
         end
         
      	function [] = PlotImage(obj)
@@ -284,7 +240,7 @@ classdef EMD
             % FitFixedSine: fit a fixed-frequency single sinusoid to the summed EMD output
             %  Used to measure the peak output of the EMD under set conditions
             
-            if nargin < 2
+            if nargin<2
                 debug = false; % default
             end
             
@@ -293,81 +249,59 @@ classdef EMD
             y = squeeze(obj.Output.all.summedReichardtOutput.Data); % summed EMD output
             y = y(2:end);
             
-            tryfit = true;
-            fitcount = 1;
-            phs_shift = 0;
-            while tryfit
-                % Create a fit
-                [xData, yData] = prepareCurveData( x, y );
+            % Create a fit
+            [xData, yData] = prepareCurveData( x, y );
 
-                ft = fittype(@(a1,c1,x) a1*sin(2*pi*obj.Motion.frequency*x + c1),... % for a single fixed-frequency sinusoid
-                           'coefficients', {'a1','c1'});
-
-                % Find best initial values
-                a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
-
-                [~, Mag , Phs] = FFT(x,y);
-                [~,midx] = max(Mag);
-                c0 = Phs(midx); % approximate phase
-
-                opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
-                opts.Display = 'Off';
-                opts.Lower = [0 -2*pi];
-                opts.Upper = [inf 0];
-                opts.StartPoint = [a0 c0];
+            ft = fittype(@(a1,c1,x) a1*sin(2*pi*obj.Motion.frequency*x + c1),... % for a single fixed-frequency sinusoid
+                       'coefficients', {'a1','c1'});
+        
+            % Find best initial values
+            a0 = max(abs(max(y) - min(y)))/2; % approximate amplitude
+            
+            [~, Mag , Phs] = FFT(x,y);
+            [~,midx] = max(Mag);
+            c0 = Phs(midx); % approximate phase
+            
+            opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
+            opts.Display = 'Off';
+            opts.Lower = [0 -2*pi];
+            opts.Upper = [inf 0];
+            opts.StartPoint = [a0 c0];
+            
+            % Fit model to data
+            [fitresult, gof] = fit( xData, yData, ft, opts );
+            
+            obj.Fit.x           = x;
+            obj.Fit.y           = y;
+            obj.Fit.fitresult   = fitresult;
+            obj.Fit.gof         = gof;
+            obj.Output.mag     	= fitresult.a1;
+            obj.Output.phase  	= fitresult.c1;
+            obj.Output.r2       = gof.rsquare;
+            
+            if debug 
+                hold on
+             	FIG = gcf; cla
+                FIG.Color = 'w';
+     
+                title(['Freq = ' num2str(round(obj.Motion.frequency,5)) , ......
+                       '      Mag = ' num2str(round(obj.Output.mag,5)) , ...
+                       '      Phs = '   num2str(round(rad2deg(obj.Output.phase),5)) , ...
+                       '      r^{2} = ' num2str(round(obj.Output.r2,5))])
+                   
+                xlim([x(1) x(end)])
+                ylim(1.1*max(abs(y))*[-1 1])
+                seenAngleN = max(abs(y))*obj.Output.all.seenAngle.Data(2:end)./max(abs(obj.Output.all.seenAngle.Data(2:end)));
+                plot(obj.Output.time(2:end),seenAngleN ,'--b')
+                plot(fitresult, x ,y ,'.k')
                 
-              	% Get input
-                seenAngleN = max(abs(y))*obj.Output.all.seenAngle.Data(2:end) ./ ...
-                                max(abs(obj.Output.all.seenAngle.Data(2:end)));
-                            
-                % Fit model to data
-                [fitresult, gof] = fit( xData, yData, ft, opts );
+                leg = findobj('type','legend');
+                delete(leg)
+                % legend('Normalized Input','EMD Output','EMD Fit');
 
-                obj.Fit.x           = x;
-                obj.Fit.y           = y;
-                obj.Fit.fitresult   = fitresult;
-                obj.Fit.gof         = gof;
-                obj.Output.mag     	= fitresult.a1;
-                obj.Output.phase  	= fitresult.c1 + phs_shift;
-                obj.Output.r2       = gof.rsquare;
-
-                if debug 
-                    hold on
-                    FIG = gcf; cla
-                    FIG.Color = 'w';
-
-                    title(['Freq = ' num2str(round(obj.Motion.frequency,5)) , ......
-                           '      Mag = ' num2str(round(obj.Output.mag,5)) , ...
-                           '      Phs = '   num2str(round(rad2deg(obj.Output.phase),5)) , ...
-                           '      r^{2} = ' num2str(round(obj.Output.r2,5))])
-
-                    xlim([x(1) x(end)])
-                    ylim(1.1*max(abs(y))*[-1 1])
-                    plot(obj.Output.time(2:end),seenAngleN ,'--b')
-                    plot(fitresult, x ,y ,'.k')
-
-                    leg = findobj('type','legend');
-                    delete(leg)
-                    % legend('Normalized Input','EMD Output','EMD Fit');
-
-                    hold off
-                end
-                
-                if obj.Output.r2 < 0.3
-                   y = -y;
-                   phs_shift = -pi;
-                   fitcount = fitcount + 1;
-                   if fitcount > 2
-                       break
-                   end
-                   warning('Flipping')
-                else
-                    tryfit = false;
-                end
+                hold off
             end
-            if obj.Output.r2 < 0.7
-               disp('Here') 
-            end
+            
         end
         
     end
