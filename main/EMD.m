@@ -207,7 +207,7 @@ classdef EMD
             % For oscillation frequencies >=1 Hz run stimuluation for one second and
             % then for one additional full cycle - in later processing first second of
             % data is not analysed to avoid startup effects
-            if frequency>=1
+            if frequency >= 1
                 obj.Motion.n_cycle      = ceil(frequency);
                 obj.Motion.recordTime 	= obj.Motion.n_cycle*obj.Motion.period;
                 obj.Motion.stopTime    	= (obj.Motion.n_cycle + 1)*obj.Motion.period;
@@ -239,8 +239,8 @@ classdef EMD
             hws.assignin('outputTimeList',  obj.Motion.recordTime:obj.Motion.stepSize:obj.Motion.stopTime);
             hws.assignin('setStopTime',     obj.Motion.stopTime);
             
-            set_param(SLX,'StopTime','setStopTime','OutputOption',...
-                          'SpecifiedOutputTimes','OutputTimes','outputTimeList');
+%             set_param(SLX,'StopTime','setStopTime','OutputOption',...
+%                           'SpecifiedOutputTimes','OutputTimes','outputTimeList');
 
             % Run model
             emd_output = sim(SLX);

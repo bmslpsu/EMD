@@ -8,18 +8,18 @@ function [] = Run_EMD_head_v2(model,wave,delay)
 
 %% EMD Properties
 % Eye
-% model           = 1;        % delay only, no photoreceptor filter
+model           = 1;        % delay only, no photoreceptor filter
 acceptAngle     = 1.1*4.5;  % acceptance angle [°]
-% delay           = 35e-3;    % EMD delay
+delay           = 35e-3;    % EMD delay
 
 % Image
-% wave            = 30;       % spatial period [°]
+wave            = 30;       % spatial period [°]
 imageHeight     = 137;      % height of input visual field
 imageWidth      = 8204;     % width of input visual field
 method          = 'square'; % spatial form
 
 % Motion
-amplitude       = 15;       % input sine wave amplitude [°]
+amplitude       = 7.5;       % input sine wave amplitude [°]
 debug           = true;     % show sine fit
 
 tlabel = ['Wave = ' num2str(wave) '°, Amp = ' num2str(amplitude) ...
